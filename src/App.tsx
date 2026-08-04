@@ -13,10 +13,21 @@ export default function App() {
   const [input, setInput] = useState("");
   const { status, result, analyze } = useAnalyze();
 
+  async function handleVoiceComplete(transcript: string) {
+    setInput(transcript);
+    const analysis = await analyze(transcript);
+    if (analysis && "speechSynthesis" in window) {
+      const spoken = `This looks ${analysis.label}. ${analysis.why}`;
+      const utterance = new SpeechSynthesisUtterance(spoken);
+      utterance.rate = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
   return (
     <div className="app">
       <Sidebar active={view} onNavigate={setView} />
-
       <main className="main">
         {view === "home" && (
           <HomePage
@@ -26,9 +37,9 @@ export default function App() {
             result={result}
             onVerify={() => analyze(input)}
             onLearn={() => setView("learn")}
+            onVoiceComplete={handleVoiceComplete}
           />
         )}
-
         {view === "verify" && (
           <VerifyPage
             input={input}
@@ -38,7 +49,6 @@ export default function App() {
             onVerify={() => analyze(input)}
           />
         )}
-
         {view === "learn" && <LearnPage />}
         {view === "insights" && <InsightsPage />}
         {view === "profile" && <ProfilePage />}

@@ -10,9 +10,10 @@ interface Props {
   result: Analysis | null;
   onVerify: () => void;
   onLearn: () => void;
+  onVoiceComplete?: (transcript: string) => void;
 }
 
-export default function HomePage({ input, setInput, status, result, onVerify, onLearn }: Props) {
+export default function HomePage({ input, setInput, status, result, onVerify, onLearn, onVoiceComplete }: Props) {
   return (
     <>
       <p className="greeting">Good afternoon,</p>
@@ -21,7 +22,7 @@ export default function HomePage({ input, setInput, status, result, onVerify, on
         Paste a link, upload a file or record audio. We&rsquo;ll help you understand the truth behind it.
       </p>
 
-      <IntakeGrid value={input} onChange={setInput} onVerify={onVerify} busy={status === "loading"} />
+      <IntakeGrid value={input} onChange={setInput} onVerify={onVerify} busy={status === "loading"} onVoiceComplete={onVoiceComplete} />
 
       <RecentAnalyses />
       <LearnBanner onClick={onLearn} />

@@ -2,9 +2,6 @@ import { useState } from "react";
 import type { Analysis } from "../types/analysis";
 import { bandFor, labelFor, localAnalyze } from "../data/heuristics";
 
-// Point this at your FastAPI backend. In dev, set VITE_API_URL in a
-// .env file (e.g. VITE_API_URL=http://localhost:8000), or configure a
-// Vite proxy so "/api" forwards to the backend.
 const API =
   (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env
     ?.VITE_API_URL ?? "";
@@ -15,25 +12,45 @@ export function useAnalyze() {
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<Analysis | null>(null);
 
-  async function analyze(content: string) {
-    if (!content.trim()) return;
+  async function analyze(content: string): Promise<Analysis | null> {
+    if (!content.trim()) return null;
     setStatus("loading");
     setResult(null);
+    let finalResult: Analysis;
     try {
-      const res = await fetch(`${API}/api/analyze`, {
+      const res = await fetch(`${API}/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, content_type: "article" }),
       });
       if (!res.ok) throw new Error("api");
       const data = await res.json();
-      // Backend may omit band/label — derive them here so the UI is safe.
-      const band = data.band ?? bandFor(data.score);
-      setResult({ ...data, band, label: data.label ?? labelFor(band) });
-    } catch {
-      setResult(localAnalyze(content)); // graceful offline fallback
+      const band = bandFor(data.credibility_score);
+
+      finalResult = {
+        title: content.slice(0, 80),
+        type: "Claim",
+        source: "Unknown source",
+        score: data.credibility_score,
+        band,
+        label: labelFor(band),
+        why: data.explanation,
+        evidence: [],
+        reliableSources: data.suggested_sources ?? [],
+        journey: (data.red_flags ?? []).map((f: { label: string; description: string }) => ({
+          title: f.label,
+          status: f.description,
+          warn: true,
+        })),
+        aiLikely: false,
+      };
+    } catch (err) {
+      console.error("analyze failed:", err);
+      finalResult = localAnalyze(content);
     }
+    setResult(finalResult);
     setStatus("done");
+    return finalResult;
   }
 
   return { status, result, analyze };
