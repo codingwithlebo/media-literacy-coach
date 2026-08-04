@@ -1,40 +1,47 @@
 import { useState } from "react";
-import Sidebar from "./components/SideBar";
-import IntakeGrid from "./components/IntakeGrid";
-import { RecentAnalyses, LearnBanner } from "./components/RecentAnalyses";
-import AnalysisReport from "./components/AnalysisReport";
+import Sidebar, { type View } from "./components/SideBar";
+import HomePage from "./components/pages/HomePage";
+import VerifyPage from "./components/pages/VerifyPage";
+import LearnPage from "./components/pages/LearnPage";
+import InsightsPage from "./components/pages/InsightsPage";
+import ProfilePage from "./components/pages/ProfilePage";
 import { useAnalyze } from "./hooks/useAnalyze";
-
+import "./index.css";
 
 export default function App() {
+  const [view, setView] = useState<View>("home");
   const [input, setInput] = useState("");
   const { status, result, analyze } = useAnalyze();
 
   return (
     <div className="app">
-      <Sidebar active="home" />
+      <Sidebar active={view} onNavigate={setView} />
 
       <main className="main">
-        <p className="greeting">Good afternoon,</p>
-        <h1 className="headline">What would you like to verify today?</h1>
-        <p className="subhead">
-          Paste a link, upload a file, or record audio. We&rsquo;ll help you understand the truth behind it.
-        </p>
+        {view === "home" && (
+          <HomePage
+            input={input}
+            setInput={setInput}
+            status={status}
+            result={result}
+            onVerify={() => analyze(input)}
+            onLearn={() => setView("learn")}
+          />
+        )}
 
-        <IntakeGrid
-          value={input}
-          onChange={setInput}
-          onVerify={() => analyze(input)}
-          busy={status === "loading"}
-        />
+        {view === "verify" && (
+          <VerifyPage
+            input={input}
+            setInput={setInput}
+            status={status}
+            result={result}
+            onVerify={() => analyze(input)}
+          />
+        )}
 
-        <RecentAnalyses />
-        <LearnBanner />
-
-        <div className="row-head mt-48">
-          <h2 className="section-title">Analysis Report</h2>
-        </div>
-        <AnalysisReport status={status} result={result} />
+        {view === "learn" && <LearnPage />}
+        {view === "insights" && <InsightsPage />}
+        {view === "profile" && <ProfilePage />}
       </main>
     </div>
   );

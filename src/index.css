@@ -1,3 +1,8 @@
+/* ------------------------------------------------------------------ *
+ * Verify — media literacy platform
+ * Design tokens derived from the mockup: dark green-black canvas,
+ * editorial serif display, sage / gold / coral credibility accents.
+ * ------------------------------------------------------------------ */
 
 :root {
   /* Surfaces */
@@ -325,4 +330,136 @@ button { font: inherit; cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+}
+
+/* ------------------------------------------------------------------ *
+ * Nav buttons, page views (Verify / Learn / Insights / Profile)
+ * ------------------------------------------------------------------ */
+
+/* make sidebar items real buttons without losing the look */
+.nav-item, .brand-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.brand-btn { display: flex; gap: 12px; align-items: flex-start; padding: 0 6px; }
+.brand-btn .brand-name { color: var(--ink-soft); }
+
+/* Verify page */
+.verify-single {
+  margin-top: 30px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.verify-actions { display: flex; gap: 10px; margin-top: 14px; }
+
+/* ---- Learn: challenge ---- */
+.challenge {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.challenge-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.challenge-count { font-size: 12px; color: var(--ink-mute); }
+.challenge-prompt {
+  font-family: var(--font-display);
+  font-size: 21px; line-height: 1.35;
+  color: var(--ink);
+  padding: 18px 20px;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+.options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.option {
+  padding: 14px; border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1px solid var(--line-strong);
+  color: var(--ink-soft); font-size: 14px; font-weight: 500;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.option:hover:not(:disabled) { border-color: var(--sage-dim); color: var(--ink); }
+.option:disabled { cursor: default; }
+.opt-correct { border-color: var(--sage); color: var(--sage); background: rgba(127,184,148,.10); }
+.opt-wrong   { border-color: var(--coral); color: var(--coral); background: rgba(217,119,106,.10); }
+.opt-dim     { opacity: .45; }
+
+.explain { margin-top: 20px; padding: 18px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--bg); }
+.explain strong { display: block; margin-bottom: 8px; font-size: 14.5px; }
+.explain p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; margin-bottom: 16px; }
+.explain-good strong { color: var(--sage); }
+.explain-bad strong { color: var(--gold); }
+.challenge-done { font-size: 13.5px; color: var(--ink-soft); }
+
+/* ---- Learn: lessons ---- */
+.lessons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.lesson-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.lesson-tag {
+  align-self: flex-start; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sage); background: rgba(127,184,148,.10);
+  border: 1px solid var(--line-strong); border-radius: 20px; padding: 4px 10px;
+}
+.lesson-card h4 { font-family: var(--font-display); font-size: 18px; font-weight: 500; }
+.lesson-card p { font-size: 13px; color: var(--ink-mute); line-height: 1.55; flex: 1; }
+.lesson-foot { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-mute); margin-top: 4px; }
+.lesson-start { color: var(--sage); font-weight: 600; }
+.lesson-card:hover .lesson-start { text-decoration: underline; }
+
+/* ---- Insights ---- */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+.stat-v { font-family: var(--font-display); font-size: 34px; color: var(--sage); line-height: 1; }
+.stat-k { font-size: 13.5px; color: var(--ink-soft); margin-top: 10px; }
+.stat-note { font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
+
+.break-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.break-label { width: 160px; font-size: 13.5px; color: var(--ink-soft); flex: none; }
+.break-bar { flex: 1; height: 9px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.break-bar > i { display: block; height: 100%; border-radius: 6px; }
+.break-pct { width: 42px; text-align: right; font-size: 13px; color: var(--ink-mute); flex: none; }
+.is-high-bg { background: var(--sage); }
+.is-med-bg  { background: var(--gold); }
+.is-low-bg  { background: var(--coral); }
+
+/* ---- Profile ---- */
+.profile-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 20px;
+}
+.avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--sage); color: #06110b;
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 24px; flex: none;
+}
+.profile-name { font-size: 16px; font-weight: 600; }
+.profile-sub { font-size: 12.5px; color: var(--ink-mute); margin-top: 2px; }
+.pref-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 0; border-bottom: 1px solid var(--line);
+  font-size: 14px; color: var(--ink-soft); cursor: pointer;
+}
+.pref-row:last-child { border-bottom: none; }
+.switch-off { background: var(--line-strong); }
+.switch-off::after { right: auto; left: 2px; background: #8a978f; }
+
+@media (max-width: 1180px) {
+  .options { grid-template-columns: 1fr; }
+  .lessons { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 860px) {
+  .lessons, .stat-grid { grid-template-columns: 1fr; }
+  .break-label { width: 110px; }
 }
