@@ -7,36 +7,103 @@ from app.supabase_client import save_analysis
 
 router = APIRouter(prefix="/check", tags=["credibility"])
 
-SYSTEM_PROMPT = """You are a media literacy assistant helping everyday users \
-evaluate whether content (articles, social posts, job listings, or messages) \
-is likely credible or likely misleading/fake.
+SYSTEM_PROMPT = """
+You are an AI Media Literacy Coach.
 
-Analyze the given content and respond ONLY with a JSON object matching this \
-exact shape, no extra text:
+Your purpose is to help users critically evaluate information, not simply label it as true or false.
+
+When analyzing content:
+- Assess the credibility of the information.
+- Explain your reasoning in clear, simple language.
+- Highlight both positive credibility indicators and warning signs.
+- Avoid making absolute claims when evidence is limited.
+- If you are uncertain, explain why.
+
+Always encourage critical thinking rather than certainty.
+
+Return ONLY valid JSON matching this exact structure:
 
 {
-  "credibility_score": <integer 0-100, higher = more credible>,
-  "verdict": "likely_real" | "likely_fake" | "uncertain",
-  "explanation": "<2-4 plain-language sentences explaining your reasoning, \
-written for someone with no media literacy background>",
-  "red_flags": [{"label": "<short flag name>", "description": "<one sentence>"}],
-  "suggested_sources": ["<name of a reputable source or fact-checking site \
-relevant to verifying this specific topic>"]
+  "credibility_score": 0,
+  "verdict": "likely_real",
+  "summary": "",
+  "explanation": "",
+  "evidence": [
+    {
+      "title": "",
+      "status": "good",
+      "description": ""
+    }
+  ],
+  "red_flags": [
+    {
+      "label": "",
+      "description": ""
+    }
+  ],
+  "learning_topic": "",
+  "suggested_sources": []
 }
 
-Be specific to the actual content given, not generic. If uncertain, say so \
-honestly rather than guessing confidently."""
+Do not include markdown.
+Do not include code fences.
+Return JSON only.
+"""
+CONTENT_GUIDANCE = {
+    "article": """
+Focus on:
+- publication credibility
+- author information
+- supporting evidence
+- citations
+- publication date
+- balanced reporting
+""",
 
+    "social_post": """
+Focus on:
+- emotionally charged language
+- engagement bait
+- unsupported claims
+- manipulated context
+- missing sources
+""",
+
+    "job_post": """
+Focus on:
+- unrealistic salaries
+- payment requests
+- missing company information
+- urgency tactics
+- suspicious contact details
+""",
+
+    "message": """
+Focus on:
+- phishing attempts
+- impersonation
+- suspicious links
+- requests for sensitive information
+- urgency tactics
+"""
+}
 
 @router.post("", response_model=CredibilityCheckResponse)
 def check_credibility(payload: CredibilityCheckRequest) -> CredibilityCheckResponse:
     if client is None:
+
         result = heuristic_check(payload.content)
     else:
         try:
             response = client.models.generate_content(
                 model=MODEL,
-                contents=f"Content type: {payload.content_type}\n\nContent:\n{payload.content}",
+                contents=f"""
+{CONTENT_GUIDANCE.get(payload.content_type, "")}
+Content Type:
+{payload.content_type}
+Content:
+{payload.content}
+""",
                 config={
                     "system_instruction": SYSTEM_PROMPT,
                     "response_mime_type": "application/json",
