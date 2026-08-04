@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.models import CredibilityCheckRequest, CredibilityCheckResponse
 from app.ai_client import client, MODEL
 from app.heuristics import heuristic_check
+from app.supabase_client import save_analysis
 
 router = APIRouter(prefix="/check", tags=["credibility"])
 
@@ -90,27 +91,36 @@ Focus on:
 @router.post("", response_model=CredibilityCheckResponse)
 def check_credibility(payload: CredibilityCheckRequest) -> CredibilityCheckResponse:
     if client is None:
-        return heuristic_check(payload.content)
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=f"""
+        result = heuristic_check(payload.content)
+    else:
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=f"""
 {CONTENT_GUIDANCE.get(payload.content_type, "")}
-
 Content Type:
 {payload.content_type}
-
 Content:
 {payload.content}
 """,
-            config={
-                "system_instruction": SYSTEM_PROMPT,
-                "response_mime_type": "application/json",
-                "temperature": 0.3,
-            },
-        )
-        data = json.loads(response.text)
-        return CredibilityCheckResponse(**data)
-    except Exception:
-        return heuristic_check(payload.content)
+                config={
+                    "system_instruction": SYSTEM_PROMPT,
+                    "response_mime_type": "application/json",
+                    "temperature": 0.3,
+                },
+            )
+            data = json.loads(response.text)
+            result = CredibilityCheckResponse(**data)
+        except Exception:
+            result = heuristic_check(payload.content)
+
+    save_analysis(
+        content=payload.content,
+        content_type=payload.content_type,
+        credibility_score=result.credibility_score,
+        verdict=result.verdict,
+        explanation=result.explanation,
+    )
+
+    return result
