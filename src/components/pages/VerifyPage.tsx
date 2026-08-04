@@ -13,9 +13,9 @@ export default function VerifyPage({ input, setInput, status, result, onVerify }
   return (
     <>
       <p className="greeting">Verify</p>
-      <h1 className="headline">Check a claim, link, or post</h1>
+      <h1 className="headline">Check a claim, link or post</h1>
       <p className="subhead">
-        Paste anything you&rsquo;re unsure about. You&rsquo;ll get a credibility read and, more importantly,
+        Paste anything you&rsquo;re unsure about. You&rsquo;ll get a credibility read and more importantly,
         the reasons behind it.
       </p>
 

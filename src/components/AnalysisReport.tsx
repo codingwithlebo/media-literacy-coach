@@ -55,7 +55,7 @@ export default function AnalysisReport({
         </div>
         <div className="bar"><i style={{ width: pct, background: c }} /></div>
         <p className="assess-note">
-          This score reflects source clarity, sound reasoning, emotional tone, and citation quality —
+          This score reflects source clarity, sound reasoning, emotional tone and citation quality —
           not a simple true/false label.
         </p>
 

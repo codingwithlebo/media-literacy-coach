@@ -18,7 +18,7 @@ export default function HomePage({ input, setInput, status, result, onVerify, on
       <p className="greeting">Good afternoon,</p>
       <h1 className="headline">What would you like to verify today?</h1>
       <p className="subhead">
-        Paste a link, upload a file, or record audio. We&rsquo;ll help you understand the truth behind it.
+        Paste a link, upload a file or record audio. We&rsquo;ll help you understand the truth behind it.
       </p>
 
       <IntakeGrid value={input} onChange={setInput} onVerify={onVerify} busy={status === "loading"} />
