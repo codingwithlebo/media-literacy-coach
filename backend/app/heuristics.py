@@ -1,5 +1,9 @@
 import re
-from app.models import CredibilityCheckResponse, RedFlag
+from app.models import (
+    CredibilityCheckResponse,
+    RedFlag,
+    EvidenceFinding,
+)
 
 URGENCY_PHRASES = [
     r"\bact now\b", r"\burgent\b", r"\bimmediately\b", r"\b24 hours\b",
@@ -58,9 +62,33 @@ def heuristic_check(content: str) -> CredibilityCheckResponse:
     )
 
     return CredibilityCheckResponse(
-        credibility_score=score,
-        verdict=verdict,
-        explanation=explanation,
-        red_flags=red_flags,
-        suggested_sources=["Africa Check", "AFP Fact Check", "Snopes"],
-    )
+    credibility_score=score,
+    verdict=verdict,
+
+    summary=(
+        "This assessment was generated using heuristic pattern matching because "
+        "AI analysis is currently unavailable."
+    ),
+
+    explanation=explanation,
+
+    evidence=[
+        {
+            "title": "Pattern-Based Analysis",
+            "status": "warning",
+            "description": (
+                "This result is based on common scam and misinformation patterns, "
+                "not AI reasoning. Verify important claims using trusted sources."
+            ),
+        }
+    ],
+
+    red_flags=red_flags,
+
+    learning_topic="Checking Reliable Sources",
+
+    suggested_sources=[
+        "Google Fact Check",
+        "Snopes",
+    ],
+)
