@@ -34,8 +34,23 @@ export function useAnalyze() {
         score: data.credibility_score,
         band,
         label: labelFor(band),
-        why: data.explanation,
-        evidence: [],
+        why: `${data.summary}\n\n${data.explanation}`,
+        evidence: (data.evidence ?? []).map(
+         (item: {
+           title: string;
+           status: string;
+           description: string;
+         }) => ({
+           label: item.title,
+           verdict:
+          item.status === "good"
+            ? "yes"
+            : item.status === "bad"
+            ? "no"
+            : "flag",
+           value: item.description,
+          })
+        ),
         reliableSources: data.suggested_sources ?? [],
         journey: (data.red_flags ?? []).map((f: { label: string; description: string }) => ({
           title: f.label,
