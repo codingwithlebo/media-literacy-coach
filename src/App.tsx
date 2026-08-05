@@ -5,6 +5,7 @@ import VerifyPage from "./components/pages/VerifyPage";
 import LearnPage from "./components/pages/LearnPage";
 import InsightsPage from "./components/pages/InsightsPage";
 import ProfilePage from "./components/pages/ProfilePage";
+import SettingsPage from "./components/pages/SettingsPage";
 import { useAnalyze } from "./hooks/useAnalyze";
 import "./index.css";
 
@@ -52,6 +53,7 @@ export default function App() {
         {view === "learn" && <LearnPage />}
         {view === "insights" && <InsightsPage />}
         {view === "profile" && <ProfilePage />}
+        {view === "settings" && <SettingsPage />}
       </main>
     </div>
   );

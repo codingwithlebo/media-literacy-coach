@@ -1126,6 +1126,34 @@ button {
   background: #8a978f;
 }
 
+/* Segmented control used in Settings */
+.seg {
+  display: inline-flex;
+  gap: 8px;
+  background: transparent;
+}
+
+.seg button {
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+.seg button:hover {
+  border-color: var(--sage-dim);
+  color: var(--ink);
+}
+
+.seg button.active {
+  background: var(--surface);
+  border-color: var(--sage-dim);
+  color: var(--ink);
+  font-weight: 600;
+}
+
 @media (max-width: 1180px) {
   .options {
     grid-template-columns: 1fr;
