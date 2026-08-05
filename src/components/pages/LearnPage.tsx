@@ -2,57 +2,110 @@ import { useState } from "react";
 import confetti from "canvas-confetti";
 import { LESSONS, CHALLENGES } from "../../data/challenges";
 
-export default function LearnPage() {
-  const [i, setI] = useState(0);
-  const [picked, setPicked] = useState<number | null>(null);
-  const [correct, setCorrect] = useState(0);
-  const [seen, setSeen] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [openLesson, setOpenLesson] = useState<string | null>(null);
-  const [popKey, setPopKey] = useState(0);
+const STORAGE_KEY = "verify-learn-progress";
 
+type Progress = {
+  correct: number;
+  seen: number;
+  coins: number;
+  streak: number;
+  bestStreak: number;
+  currentIndex: number;
+};
+
+const DEFAULT_PROGRESS: Progress = {
+  correct: 0,
+  seen: 0,
+  coins: 0,
+  streak: 0,
+  bestStreak: 0,
+  currentIndex: 0,
+};
+
+function loadProgress(): Progress {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_PROGRESS;
+    return { ...DEFAULT_PROGRESS, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_PROGRESS;
+  }
+}
+
+function saveProgress(p: Progress) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+
+export default function LearnPage() {
+  const [progress, setProgress] = useState<Progress>(loadProgress);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [openLesson, setOpenLesson] = useState<string | null>(null);
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerKey, setBannerKey] = useState(0);
+
+  const { correct, seen, coins, streak, bestStreak, currentIndex: i } = progress;
   const c = CHALLENGES[i];
   const answered = picked !== null;
   const isRight = picked === c.answer;
   const done = seen >= CHALLENGES.length && answered;
 
+  function updateProgress(patch: Partial<Progress>) {
+    setProgress((current) => {
+      const next = { ...current, ...patch };
+      saveProgress(next);
+      return next;
+    });
+  }
+
   function choose(idx: number) {
     if (answered) return;
     setPicked(idx);
-    setSeen((s) => s + 1);
+
     if (idx === c.answer) {
-      setCorrect((n) => n + 1);
-      setCoins((n) => n + 10);
-      setStreak((s) => {
-        const next = s + 1;
-        setBestStreak((best) => Math.max(best, next));
-        return next;
+      const nextStreak = streak + 1;
+      updateProgress({
+        correct: correct + 1,
+        seen: seen + 1,
+        coins: coins + 10,
+        streak: nextStreak,
+        bestStreak: Math.max(bestStreak, nextStreak),
       });
-      setPopKey((k) => k + 1);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+
+      setBannerKey((k) => k + 1);
+      setShowBanner(true);
+      setTimeout(() => setShowBanner(false), 2200);
+
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.3 } });
     } else {
-      setStreak(0);
+      updateProgress({ seen: seen + 1, streak: 0 });
     }
   }
+
   function next() {
     setPicked(null);
-    setI((n) => (n + 1) % CHALLENGES.length);
+    updateProgress({ currentIndex: (i + 1) % CHALLENGES.length });
   }
+
   function restart() {
-    setI(0); setPicked(null); setCorrect(0); setSeen(0); setCoins(0); setStreak(0); setBestStreak(0);
+    setPicked(null);
+    setProgress(DEFAULT_PROGRESS);
+    saveProgress(DEFAULT_PROGRESS);
   }
+
   function toggleLesson(title: string) {
     setOpenLesson((current) => (current === title ? null : title));
   }
 
   return (
     <>
+      {showBanner && (
+        <div className="coin-banner-wrap" key={bannerKey}>
+          <div className="coin-banner">
+            Correct! 🎉 <span className="coins-highlight">+10 AI COINS</span>
+          </div>
+        </div>
+      )}
+
       <p className="greeting">Learning Hub</p>
       <h1 className="headline">Get better at spotting the tricks</h1>
       <p className="subhead">
@@ -64,8 +117,8 @@ export default function LearnPage() {
         <h2 className="section-title">Daily challenge</h2>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <span className="link-quiet">{correct} / {seen} correct</span>
-          <span key={`coins-${popKey}`} className="link-quiet stat-pop">🪙 {coins} AI coins</span>
-          <span key={`streak-${popKey}`} className="link-quiet stat-pop">🔥 {streak} streak (best {bestStreak})</span>
+          <span className="link-quiet">🪙 {coins} AI coins</span>
+          <span className="link-quiet">🔥 {streak} streak (best {bestStreak})</span>
         </div>
       </div>
       <div className="challenge">
