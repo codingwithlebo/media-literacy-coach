@@ -1228,3 +1228,20 @@ button {
     opacity: 0;
   }
 }
+
+html.light-mode {
+  --bg: #f7f9f7;
+  --bg-side: #f0f4f0;
+  --surface: #ffffff;
+  --surface-2: #eef2ee;
+  --line: #d9e0d9;
+  --line-strong: #c3ccc3;
+
+  --ink: #14201a;
+  --ink-soft: #3d4a42;
+  --ink-mute: #6b7a70;
+}
+
+html.light-mode .side-card {
+  background: linear-gradient(160deg, #e5efe6, #eef4ef);
+}

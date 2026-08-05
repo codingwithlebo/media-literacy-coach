@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import check, transcribe, ocr
+from app.routers import check, transcribe, ocr, analyses
 
 app = FastAPI(title="Media Literacy Coach API", version="0.1.0")
 
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(check.router)
 app.include_router(transcribe.router)
 app.include_router(ocr.router)
+app.include_router(analyses.router)
 
 
 @app.get("/")

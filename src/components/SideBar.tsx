@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { I, Ic } from "./icons";
 
@@ -11,6 +12,8 @@ const NAV: { key: View; label: string; icon: ReactNode }[] = [
   { key: "profile", label: "Profile", icon: I.profile },
 ];
 
+const THEME_KEY = "verify-theme";
+
 export default function Sidebar({
   active,
   onNavigate,
@@ -18,6 +21,13 @@ export default function Sidebar({
   active: View;
   onNavigate: (v: View) => void;
 }) {
+  const [lightMode, setLightMode] = useState(() => localStorage.getItem(THEME_KEY) === "light");
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light-mode", lightMode);
+    localStorage.setItem(THEME_KEY, lightMode ? "light" : "dark");
+  }, [lightMode]);
+
   return (
     <aside className="sidebar">
       <button
@@ -29,7 +39,6 @@ export default function Sidebar({
           Verify.<br />Understand.<br />Share Wisely.
         </div>
       </button>
-
       <nav className="nav">
         {NAV.map((n) => (
           <button
@@ -42,15 +51,26 @@ export default function Sidebar({
           </button>
         ))}
       </nav>
-
       <div className="side-card">
         <h4>Think before you share.</h4>
         <p>Better questions lead to better information.</p>
       </div>
-
       <div className="side-foot">
-        <div className="side-toggle"><span>Dark Mode</span><span className="switch" /></div>
-        <div className="side-toggle"><span>Settings</span></div>
+        <div
+          className="side-toggle"
+          onClick={() => setLightMode((v) => !v)}
+          style={{ cursor: "pointer" }}
+        >
+          <span>Dark Mode</span>
+          <span className={`switch ${lightMode ? "switch-off" : ""}`} />
+        </div>
+        <div
+          className="side-toggle"
+          onClick={() => onNavigate("profile")}
+          style={{ cursor: "pointer" }}
+        >
+          <span>Settings</span>
+        </div>
       </div>
     </aside>
   );
