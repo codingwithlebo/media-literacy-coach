@@ -96,12 +96,19 @@ def check_credibility(payload: CredibilityCheckRequest) -> CredibilityCheckRespo
         result = heuristic_check(payload.content)
 
     else:
-        print("Using Gemini AI")
+        print("Using OpenRouter AI")
 
         try:
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=f"""
+            response = client.chat.completions.create(
+              model=MODEL,
+              messages=[
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT,
+        },
+        {
+            "role": "user",
+            "content": f"""
 {CONTENT_GUIDANCE.get(payload.content_type, "")}
 
 Content Type:
@@ -110,18 +117,15 @@ Content Type:
 Content:
 {payload.content}
 """,
-                config={
-                    "system_instruction": SYSTEM_PROMPT,
-                    "response_mime_type": "application/json",
-                    "temperature": 0.3,
-                },
-            )
-
-            data = json.loads(response.text)
+        },
+    ],
+    temperature=0.3,
+)
+            data = json.loads(response.choices[0].message.content)
             result = CredibilityCheckResponse(**data)
 
         except Exception as e:
-            print("Gemini Error:", e)
+            print("OpenRouter Error:", e)
             result = heuristic_check(payload.content)
 
     save_analysis(
