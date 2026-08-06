@@ -41,10 +41,7 @@ type Point = {
 
 export default function InsightsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [selectedInsightId, setSelectedInsightId] = useState<NodeId | null>(
-    null,
-  );
-  const [pulseToken, setPulseToken] = useState(0);
+  const [selectedInsightId] = useState<NodeId | null>(null);
   const [pointer, setPointer] = useState<Point | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -157,12 +154,6 @@ export default function InsightsPage() {
     insightEntries.find((entry) => entry.id === selectedInsightId) ?? null;
   const visibleCards = insightEntries.slice(0, 4);
 
-  const pulseFlock = (id: NodeId) => {
-    setSelectedInsightId(id);
-    setPointer(null);
-    setPulseToken((value) => value + 1);
-  };
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -181,8 +172,8 @@ export default function InsightsPage() {
       const buildLayout = (text: string, widthPx: number, heightPx: number) => {
         const chars = text.split("");
         const maxCharsPerLine = Math.max(
-          16,
-          Math.min(28, Math.floor(widthPx / 16)),
+          14,
+          Math.min(22, Math.floor(widthPx / 18)),
         );
         const rows: string[][] = [];
         let currentRow: string[] = [];
@@ -207,14 +198,14 @@ export default function InsightsPage() {
         });
         if (currentRow.length > 0) rows.push(currentRow);
 
-        const totalHeight = rows.length * 22;
-        const startY = heightPx / 2 - totalHeight / 2 + 10;
-        const startX = widthPx / 2 - Math.min(360, widthPx * 0.58) / 2;
+        const totalHeight = rows.length * 20;
+        const startY = heightPx / 2 - totalHeight / 2 + 8;
+        const startX = widthPx / 2 - Math.min(300, widthPx * 0.5) / 2;
         const positions: Point[] = [];
         rows.forEach((row, rowIndex) => {
           const rowWidth = row.length * 10;
           const rowStartX =
-            startX + (Math.min(360, widthPx * 0.58) - rowWidth) / 2;
+            startX + (Math.min(300, widthPx * 0.5) - rowWidth) / 2;
           row.forEach((char, charIndex) => {
             if (char === " ") return;
             positions.push({
@@ -250,8 +241,8 @@ export default function InsightsPage() {
               vy: (Math.random() - 0.5) * 0.7,
               targetX: position?.x ?? width / 2,
               targetY: position?.y ?? height / 2,
-              size: 10 + Math.random() * 4,
-              alpha: 0.7 + Math.random() * 0.2,
+              size: 9 + Math.random() * 3,
+              alpha: 0.55 + Math.random() * 0.15,
               layoutIndex: index,
             });
           });
@@ -278,7 +269,6 @@ export default function InsightsPage() {
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
       const particles = particlesRef.current;
-      const activeGroup = selectedInsightId;
       const pointerPos = pointer;
 
       for (const particle of particles) {
@@ -307,41 +297,30 @@ export default function InsightsPage() {
         if (neighborCount > 0) {
           ax /= neighborCount;
           ay /= neighborCount;
-          particle.vx += (ax - particle.vx) * 0.005;
-          particle.vy += (ay - particle.vy) * 0.005;
-          particle.vx += separationX * 0.0015;
-          particle.vy += separationY * 0.0015;
+          particle.vx += (ax - particle.vx) * 0.004;
+          particle.vy += (ay - particle.vy) * 0.004;
+          particle.vx += separationX * 0.001;
+          particle.vy += separationY * 0.001;
         }
 
         if (pointerPos) {
           const dx = pointerPos.x - particle.x;
           const dy = pointerPos.y - particle.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < 140) {
-            const pull = (140 - dist) / 140;
-            particle.vx += (dx / Math.max(1, dist)) * pull * 0.018;
-            particle.vy += (dy / Math.max(1, dist)) * pull * 0.018;
+          if (dist < 120) {
+            const pull = (120 - dist) / 120;
+            particle.vx += (dx / Math.max(1, dist)) * pull * 0.008;
+            particle.vy += (dy / Math.max(1, dist)) * pull * 0.008;
           }
         }
 
-        if (activeGroup && particle.group === activeGroup) {
-          const layout = layoutRef.current[activeGroup];
-          const target =
-            layout?.[particle.layoutIndex % Math.max(layout.length, 1)];
-          if (target) {
-            particle.vx += (target.x - particle.x) * 0.012;
-            particle.vy += (target.y - particle.y) * 0.012;
-          }
-        } else {
-          const targetX = width / 2 + Math.sin(frame / 80 + particle.size) * 40;
-          const targetY =
-            height / 2 + Math.cos(frame / 110 + particle.size) * 24;
-          particle.vx += (targetX - particle.x) * 0.001;
-          particle.vy += (targetY - particle.y) * 0.001;
-        }
+        const targetX = width / 2 + Math.sin(frame / 180 + particle.size) * 26;
+        const targetY = height / 2 + Math.cos(frame / 220 + particle.size) * 18;
+        particle.vx += (targetX - particle.x) * 0.0007;
+        particle.vy += (targetY - particle.y) * 0.0007;
 
-        particle.vx *= 0.96;
-        particle.vy *= 0.96;
+        particle.vx *= 0.965;
+        particle.vy *= 0.965;
         particle.x += particle.vx;
         particle.y += particle.vy;
 
@@ -362,9 +341,9 @@ export default function InsightsPage() {
         0,
         width / 2,
         height / 2,
-        width * 0.62,
+        width * 0.68,
       );
-      gradient.addColorStop(0, "rgba(127, 184, 148, 0.08)");
+      gradient.addColorStop(0, "rgba(127, 184, 148, 0.05)");
       gradient.addColorStop(1, "rgba(10, 15, 13, 0)");
       context.fillStyle = gradient;
       context.fillRect(0, 0, width, height);
@@ -373,10 +352,9 @@ export default function InsightsPage() {
         context.save();
         context.globalAlpha = particle.alpha;
         context.font = `${Math.round(particle.size)}px Inter, system-ui, sans-serif`;
-        context.fillStyle =
-          particle.group === activeGroup ? "#d4a24e" : "#e8ede9";
-        context.shadowBlur = particle.group === activeGroup ? 10 : 7;
-        context.shadowColor = "rgba(127, 184, 148, 0.18)";
+        context.fillStyle = "#e8ede9";
+        context.shadowBlur = 5;
+        context.shadowColor = "rgba(127, 184, 148, 0.12)";
         context.fillText(particle.char, particle.x, particle.y);
         context.restore();
       }
@@ -391,7 +369,7 @@ export default function InsightsPage() {
       window.cancelAnimationFrame(frameRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [insightEntries, pointer, selectedInsightId, pulseToken]);
+  }, [insightEntries, pointer, selectedInsightId]);
 
   return (
     <div className="murmuration-shell">
@@ -423,10 +401,8 @@ export default function InsightsPage() {
             <motion.button
               key={card.id}
               className={`insight-card ${isActive ? "active" : ""}`}
-              onClick={() => pulseFlock(card.id as NodeId)}
-              whileHover={{ y: -2, scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+              whileHover={{ y: -1, scale: 1.0 }}
+              transition={{ type: "spring", stiffness: 180, damping: 18 }}
             >
               <div className="card-head">
                 <div>
