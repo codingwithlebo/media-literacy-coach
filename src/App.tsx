@@ -5,12 +5,11 @@ import VerifyPage from "./components/pages/VerifyPage";
 import LearnPage from "./components/pages/LearnPage";
 import InsightsPage from "./components/pages/InsightsPage";
 import ProfilePage from "./components/pages/ProfilePage";
-import SettingsPage from "./components/pages/SettingsPage";
 import { useAnalyze } from "./hooks/useAnalyze";
 import "./index.css";
 
 export default function App() {
-  const [view, setView] = useState<View | "settings">("home");
+  const [view, setView] = useState<View>("home");
   const [input, setInput] = useState("");
   const { status, result, analyze } = useAnalyze();
 
@@ -28,10 +27,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar
-         active={view === "settings" ? "home" : view}
-        onNavigate={(nextView) => setView(nextView)}
-      />
+      <Sidebar active={view} onNavigate={(nextView) => setView(nextView)} />
       <main className="main">
         {view === "home" && (
           <HomePage
@@ -56,7 +52,6 @@ export default function App() {
         {view === "learn" && <LearnPage />}
         {view === "insights" && <InsightsPage />}
         {view === "profile" && <ProfilePage />}
-        {view === "settings" && <SettingsPage />}
       </main>
     </div>
   );

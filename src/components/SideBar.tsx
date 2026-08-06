@@ -1,15 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { I, Ic } from "./icons";
+import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 
 export type View = "home" | "verify" | "learn" | "insights" | "profile";
-
-const NAV: { key: View; label: string; icon: ReactNode }[] = [
-  { key: "home", label: "Home", icon: I.home },
-  { key: "verify", label: "Verify", icon: I.verify },
-  { key: "learn", label: "Learn", icon: I.learn },
-  { key: "insights", label: "Insights", icon: I.insights },
-  { key: "profile", label: "Profile", icon: I.profile },
-];
 
 export default function Sidebar({
   active,
@@ -18,16 +12,25 @@ export default function Sidebar({
   active: View;
   onNavigate: (v: View) => void;
 }) {
+  const { t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+
+  const NAV: { key: View; label: string; icon: ReactNode }[] = [
+    { key: "home", label: t("nav_home"), icon: I.home },
+    { key: "verify", label: t("nav_verify"), icon: I.verify },
+    { key: "learn", label: t("nav_learn"), icon: I.learn },
+    { key: "insights", label: t("nav_insights"), icon: I.insights },
+    { key: "profile", label: t("nav_profile"), icon: I.profile },
+  ];
 
   function go(v: View) {
     onNavigate(v);
-    setOpen(false); // close the drawer after choosing on mobile
+    setOpen(false);
   }
 
   return (
     <>
-      {/* Mobile top bar (hidden on desktop via CSS) */}
       <header className="topbar">
         <button className="tb-brand" onClick={() => go("home")}
           style={{ background: "none", border: "none", cursor: "pointer" }}>
@@ -41,17 +44,14 @@ export default function Sidebar({
         </button>
       </header>
 
-      {/* Sidebar / drawer */}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <button className="drawer-close" onClick={() => setOpen(false)} aria-label="Close menu">×</button>
-
         <button className="brand brand-btn" onClick={() => go("home")}>
           <div className="brand-mark" />
           <div className="brand-name">
-            Verify.<br />Understand.<br />Share Wisely.
+            {t("tagline1")}<br />{t("tagline2")}<br />{t("tagline3")}
           </div>
         </button>
-
         <nav className="nav">
           {NAV.map((n) => (
             <button
@@ -64,18 +64,21 @@ export default function Sidebar({
             </button>
           ))}
         </nav>
-
         <div className="side-card">
           <h4>Think before you share.</h4>
           <p>Better questions lead to better information.</p>
         </div>
-
         <div className="side-foot">
-          <div className="side-toggle"><span>Dark Mode</span><span className="switch" /></div>
-          <div className="side-toggle"><span>Settings</span></div>
+          <div
+            className="side-toggle"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            style={{ cursor: "pointer" }}
+          >
+            <span>{t("dark_mode")}</span>
+            <span className={`switch ${theme === "light" ? "switch-off" : ""}`} />
+          </div>
         </div>
       </aside>
-
       {open && <div className="nav-backdrop" onClick={() => setOpen(false)} />}
     </>
   );
