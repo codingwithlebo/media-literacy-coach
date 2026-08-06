@@ -13,7 +13,6 @@ interface Props {
   onTranscript: (text: string) => void; // hand the text to the analyze flow
 }
 
-// The browser Speech Recognition API is prefixed and untyped.
 function getRecognition(): any {
   const w = window as any;
   const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
@@ -35,12 +34,14 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
   const recognitionRef = useRef<any>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const blobRef = useRef<Blob | null>(null); // recorded OR uploaded audio
   const timerRef = useRef<number | null>(null);
   const finalRef = useRef("");
 
-  const speechSupported = typeof window !== "undefined" && Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const speechSupported =
+    typeof window !== "undefined" &&
+    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
-  // Reset everything when the modal closes.
   useEffect(() => {
     if (!open) hardReset();
     return () => stopEverything();
@@ -54,6 +55,7 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
     setTranscript("");
     setNote(null);
     finalRef.current = "";
+    blobRef.current = null;
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(null);
   }
@@ -61,15 +63,18 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
   function stopEverything() {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     try { recognitionRef.current?.stop(); } catch {}
-    try { mediaRef.current?.stop(); mediaRef.current?.stream.getTracks().forEach((t) => t.stop()); } catch {}
+    try {
+      mediaRef.current?.stop();
+      mediaRef.current?.stream.getTracks().forEach((t) => t.stop());
+    } catch {}
   }
 
   async function startRecording() {
     setNote(null);
     setTranscript("");
     finalRef.current = "";
+    blobRef.current = null;
 
-    // 1) audio for playback (works in all modern browsers)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mr = new MediaRecorder(stream);
@@ -77,16 +82,16 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
       mr.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
       mr.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        blobRef.current = blob;
         setAudioUrl(URL.createObjectURL(blob));
       };
       mr.start();
       mediaRef.current = mr;
     } catch {
-      setNote("We couldn't access your microphone. Check the browser's mic permission.");
+      setNote("We couldn't access your microphone. Check the browser's mic permission (recording also needs https or localhost).");
       return;
     }
 
-    // 2) live transcription (Chrome / Edge). Optional but nice.
     const rec = getRecognition();
     if (rec) {
       rec.onresult = (e: any) => {
@@ -111,39 +116,64 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
   function stopRecording() {
     stopEverything();
     setPhase("ready");
-    if (!speechSupported && !transcript) {
-      setNote("Live transcription isn't supported in this browser. Type what was said below, or connect the backend to transcribe the audio automatically.");
+    if (!speechSupported && !finalRef.current) {
+      setNote("This browser can't transcribe live. Press “Analyze this” to send the audio to the backend, or type what was said below.");
     }
+  }
+
+  // Send an audio blob to the backend for transcription.
+  async function transcribeBlob(blob: Blob): Promise<string> {
+    const form = new FormData();
+    form.append("audio", blob, "audio.webm");
+    const res = await fetch(`${API}/api/transcribe`, { method: "POST", body: form });
+    if (!res.ok) throw new Error("transcribe failed");
+    const data = await res.json();
+    return (data.text || "").trim();
   }
 
   async function handleUpload(file: File) {
     setNote(null);
+    blobRef.current = file;
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(URL.createObjectURL(file));
     setPhase("working");
-    // Uploaded audio can't be transcribed in the browser — ask the backend.
     try {
-      const form = new FormData();
-      form.append("audio", file);
-      const res = await fetch(`${API}/api/transcribe`, { method: "POST", body: form });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setTranscript((data.text || "").trim());
+      const text = await transcribeBlob(file);
+      setTranscript(text);
       setPhase("ready");
+      if (!text) setNote("The file uploaded, but no speech was detected. You can type the content below.");
     } catch {
       setPhase("ready");
-      setNote("Couldn't reach the transcription service. Once the backend's /api/transcribe endpoint is live, uploaded audio will be transcribed here. For now you can type the content below.");
+      setNote("Couldn't reach the transcription service yet. Once the backend's /api/transcribe endpoint is live, uploaded audio is transcribed automatically. For now, type the content below.");
     }
   }
 
-  function submit() {
+  async function submit() {
     const text = transcript.trim();
-    if (!text) { setNote("Nothing to analyze yet — record, upload, or type the content first."); return; }
-    onTranscript(text);
-    onClose();
+    if (text) { onTranscript(text); onClose(); return; }
+
+    // No transcript yet — try to transcribe whatever audio we have.
+    if (blobRef.current) {
+      setPhase("working");
+      setNote(null);
+      try {
+        const t = await transcribeBlob(blobRef.current);
+        if (t) { onTranscript(t); onClose(); return; }
+        setPhase("ready");
+        setNote("No speech was detected in the audio. You can type the content below and press Analyze.");
+        return;
+      } catch {
+        setPhase("ready");
+        setNote("Couldn't transcribe the audio — the backend's /api/transcribe endpoint isn't reachable yet. Type what was said above, then press Analyze.");
+        return;
+      }
+    }
+    setNote("Nothing to analyze yet — record, upload, or type the content first.");
   }
 
   if (!open) return null;
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  const canSubmit = phase !== "working" && (transcript.trim().length > 0 || blobRef.current !== null);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -166,17 +196,19 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
                 : <><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M6 11a6 6 0 0 0 12 0M12 17v4" /></>}
             </svg>
           </button>
+
           <div className="voice-status">
             {phase === "recording" ? <span className="rec-dot" /> : null}
             {phase === "idle" && "Tap to start recording"}
             {phase === "recording" && `Recording… ${mmss}`}
-            {phase === "ready" && "Recording ready — review below"}
+            {phase === "ready" && "Ready — review or edit below"}
             {phase === "working" && "Transcribing…"}
           </div>
 
           <label className="upload-link">
             or upload an audio file
-            <input type="file" accept="audio/*" hidden onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+            <input type="file" accept="audio/*" hidden
+              onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
           </label>
         </div>
 
@@ -185,7 +217,7 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
         <textarea
           className="paste-box"
           style={{ minHeight: 96, marginTop: 4 }}
-          placeholder="Transcript will appear here — you can edit it before analyzing."
+          placeholder="Transcript appears here — you can edit it before analyzing, or just type the content."
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
         />
@@ -194,7 +226,9 @@ export default function VoiceModal({ open, onClose, onTranscript }: Props) {
 
         <div className="modal-actions">
           <button className="btn" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={submit} disabled={!transcript.trim()}>Analyze this</button>
+          <button className="btn btn-primary" onClick={submit} disabled={!canSubmit}>
+            {phase === "working" ? "Working…" : "Analyze this"}
+          </button>
         </div>
       </div>
     </div>

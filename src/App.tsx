@@ -10,7 +10,7 @@ import { useAnalyze } from "./hooks/useAnalyze";
 import "./index.css";
 
 export default function App() {
-  const [view, setView] = useState<View>("home");
+  const [view, setView] = useState<View | "settings">("home");
   const [input, setInput] = useState("");
   const { status, result, analyze } = useAnalyze();
 
@@ -28,7 +28,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={view} onNavigate={setView} />
+      <Sidebar active={view as View} onNavigate={setView} />
       <main className="main">
         {view === "home" && (
           <HomePage
@@ -39,7 +39,7 @@ export default function App() {
             onVerify={() => analyze(input)}
             onVoice={(t) => { setInput(t); analyze(t); }}
             onLearn={() => setView("learn")}
-            onVoiceComplete={handleVoiceComplete}
+            
           />
         )}
         {view === "verify" && (
