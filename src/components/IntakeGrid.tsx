@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { I, Ic } from "./icons";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Props {
   value: string;
@@ -18,6 +19,7 @@ export default function IntakeGrid({
   busy,
   onVoiceComplete,
 }: Props) {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const articleInputRef = useRef<HTMLInputElement | null>(null);
   const [ocrBusy, setOcrBusy] = useState(false);
@@ -37,9 +39,7 @@ export default function IntakeGrid({
       onChange(data.text.trim());
     } catch (err) {
       console.error("OCR failed:", err);
-      setOcrError(
-        "Couldn't read text from that image. Try a clearer screenshot.",
-      );
+      setOcrError("Couldn't read text from that image. Try a clearer screenshot.");
     } finally {
       setOcrBusy(false);
     }
@@ -108,9 +108,7 @@ export default function IntakeGrid({
       (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      setVoiceError(
-        "Voice recording needs Chrome or Edge — not supported in this browser.",
-      );
+      setVoiceError("Voice recording needs Chrome or Edge — not supported in this browser.");
       return;
     }
 
@@ -136,19 +134,13 @@ export default function IntakeGrid({
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
-      setVoiceError(
-        "Couldn't hear you clearly — check your microphone permission and try again.",
-      );
+      setVoiceError("Couldn't hear you clearly — check your microphone permission and try again.");
       setRecording(false);
     };
 
     recognition.onend = () => {
       setRecording(false);
       const final = finalTranscript.trim();
-      if (final && typeof (arguments[0] as any) === "undefined") {
-        // no-op
-      }
-      // call optional completion callback
       if (final && onVoiceComplete) {
         try {
           onVoiceComplete(final);
@@ -168,8 +160,8 @@ export default function IntakeGrid({
           <Ic p={I.text} />
         </div>
         <div>
-          <h3>Paste Text or Link</h3>
-          <p>Paste a news article, social media post, or any link.</p>
+          <h3>{t("intake_paste_title")}</h3>
+          <p>{t("intake_paste_desc")}</p>
         </div>
         <textarea
           className="paste-box"
@@ -182,7 +174,7 @@ export default function IntakeGrid({
           onClick={onVerify}
           disabled={busy || !value.trim()}
         >
-          {busy ? "Verifying…" : "Verify this"}
+          {busy ? t("verify_button_loading") : t("verify_button")}
         </button>
       </div>
 
@@ -191,8 +183,8 @@ export default function IntakeGrid({
           <Ic p={I.image} />
         </div>
         <div>
-          <h3>Upload Screenshot</h3>
-          <p>Upload an image or screenshot to analyze.</p>
+          <h3>{t("intake_screenshot_title")}</h3>
+          <p>{t("intake_screenshot_desc")}</p>
         </div>
         <input
           ref={fileInputRef}
@@ -217,12 +209,12 @@ export default function IntakeGrid({
           }}
         >
           {ocrBusy ? (
-            "Reading text…"
+            t("intake_screenshot_reading")
           ) : (
             <>
-              Drop image here
+              {t("intake_screenshot_drop")}
               <br />
-              or browse
+              {t("intake_or_browse")}
             </>
           )}
         </div>
@@ -238,8 +230,8 @@ export default function IntakeGrid({
           <Ic p={I.file} />
         </div>
         <div>
-          <h3>Upload Article or File</h3>
-          <p>Upload a file in any format to analyze.</p>
+          <h3>{t("intake_file_title")}</h3>
+          <p>{t("intake_file_desc")}</p>
         </div>
         <input
           ref={articleInputRef}
@@ -264,16 +256,16 @@ export default function IntakeGrid({
           }}
         >
           {articleBusy ? (
-            "Reading file…"
+            t("intake_file_reading")
           ) : (
             <>
-              Drop file here
+              {t("intake_file_drop")}
               <br />
-              or browse
+              {t("intake_or_browse")}
             </>
           )}
         </div>
-        <span className="hint">PDF, DOCX, TXT</span>
+        <span className="hint">{t("intake_file_types")}</span>
         {articleError && (
           <span className="hint" style={{ color: "#f87171" }}>
             {articleError}
@@ -286,11 +278,11 @@ export default function IntakeGrid({
           <Ic p={I.mic} />
         </div>
         <div>
-          <h3>Record or Upload Voice</h3>
-          <p>Speak and we'll transcribe it live.</p>
+          <h3>{t("intake_voice_title")}</h3>
+          <p>{t("intake_voice_desc")}</p>
         </div>
         <button className="btn btn-block" onClick={toggleRecording}>
-          <Ic p={I.mic} /> {recording ? "Stop Recording" : "Record Audio"}
+          <Ic p={I.mic} /> {recording ? t("intake_voice_stop") : t("intake_voice_record")}
         </button>
         {voiceError && (
           <span className="hint" style={{ color: "#f87171" }}>

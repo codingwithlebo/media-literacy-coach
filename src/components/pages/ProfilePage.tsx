@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 const DEFAULT_PREFS = [
-  { key: "plain_language", label: "Show plain-language explanations", on: true },
-  { key: "flag_ai", label: "Flag possible AI-generated content", on: true },
-  { key: "warn_low_credibility", label: "Warn before sharing low-credibility items", on: true },
-  { key: "weekly_challenge_email", label: "Email me a weekly literacy challenge", on: false },
+  { key: "plain_language", labelKey: "pref_plain_language" as const, on: true },
+  { key: "flag_ai", labelKey: "pref_flag_ai" as const, on: true },
+  { key: "warn_low_credibility", labelKey: "pref_warn_low_credibility" as const, on: true },
+  { key: "weekly_challenge_email", labelKey: "pref_weekly_email" as const, on: false },
 ];
 
 const STORAGE_KEY = "verify-preferences";
@@ -24,6 +25,7 @@ function loadPrefs() {
 }
 
 export default function ProfilePage() {
+  const { t } = useLanguage();
   const [prefs, setPrefs] = useState(loadPrefs);
 
   function toggle(key: string) {
@@ -37,26 +39,26 @@ export default function ProfilePage() {
 
   return (
     <>
-      <p className="greeting">Profile</p>
-      <h1 className="headline">Your account</h1>
-      <p className="subhead">Manage how Verify works for you. Changes are saved automatically.</p>
+      <p className="greeting">{t("profile_greeting")}</p>
+      <h1 className="headline">{t("profile_headline")}</h1>
+      <p className="subhead">{t("profile_subhead")}</p>
 
       <div className="profile-card mt-48">
         <div className="avatar">V</div>
         <div>
-          <div className="profile-name">Verify User</div>
-          <div className="profile-sub">Media literacy learner · joined 2026</div>
+          <div className="profile-name">{t("profile_user")}</div>
+          <div className="profile-sub">{t("profile_role")} · {t("profile_joined")} 2026</div>
         </div>
-        <button className="btn" style={{ marginLeft: "auto" }}>Edit</button>
+        <button className="btn" style={{ marginLeft: "auto" }}>{t("edit_button")}</button>
       </div>
 
       <div className="row-head mt-48">
-        <h2 className="section-title">Preferences</h2>
+        <h2 className="section-title">{t("preferences_title")}</h2>
       </div>
       <div className="panel">
         {prefs.map((p) => (
           <label className="pref-row" key={p.key} onClick={() => toggle(p.key)} style={{ cursor: "pointer" }}>
-            <span>{p.label}</span>
+            <span>{t(p.labelKey)}</span>
             <span className={`switch ${p.on ? "" : "switch-off"}`} />
           </label>
         ))}
