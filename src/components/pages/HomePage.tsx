@@ -9,19 +9,26 @@ interface Props {
   status: "idle" | "loading" | "done";
   result: Analysis | null;
   onVerify: () => void;
+  onVoice: (text: string) => void;
   onLearn: () => void;
 }
 
-export default function HomePage({ input, setInput, status, result, onVerify, onLearn }: Props) {
+export default function HomePage({ input, setInput, status, result, onVerify, onVoice, onLearn }: Props) {
   return (
     <>
       <p className="greeting">Good afternoon,</p>
       <h1 className="headline">What would you like to verify today?</h1>
       <p className="subhead">
-        Paste a link, upload a file or record audio. We&rsquo;ll help you understand the truth behind it.
+        Paste a link, upload a file, or record audio. We&rsquo;ll help you understand the truth behind it.
       </p>
 
-      <IntakeGrid value={input} onChange={setInput} onVerify={onVerify} busy={status === "loading"} />
+      <IntakeGrid
+        value={input}
+        onChange={setInput}
+        onVerify={onVerify}
+        onVoice={onVoice}
+        busy={status === "loading"}
+      />
 
       <RecentAnalyses />
       <LearnBanner onClick={onLearn} />

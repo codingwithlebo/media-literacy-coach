@@ -25,6 +25,7 @@ export default function App() {
             status={status}
             result={result}
             onVerify={() => analyze(input)}
+            onVoice={(t) => { setInput(t); analyze(t); }}
             onLearn={() => setView("learn")}
           />
         )}

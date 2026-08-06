@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { I, Ic } from "./icons";
+import VoiceModal from "./voiceModal";
 
 interface Props {
   value: string;
   onChange: (v: string) => void;
   onVerify: () => void;
+  onVoice: (text: string) => void; // transcript -> analyze
   busy: boolean;
 }
 
-export default function IntakeGrid({ value, onChange, onVerify, busy }: Props) {
+export default function IntakeGrid({ value, onChange, onVerify, onVoice, busy }: Props) {
+  const [voiceOpen, setVoiceOpen] = useState(false);
+
   return (
     <section className="intake">
       <div className="intake-card">
@@ -43,9 +48,11 @@ export default function IntakeGrid({ value, onChange, onVerify, busy }: Props) {
       <div className="intake-card">
         <div className="intake-icon"><Ic p={I.mic} /></div>
         <div><h3>Record or Upload Voice</h3><p>Upload a voice note or record directly.</p></div>
-        <button className="btn btn-block"><Ic p={I.mic} /> Record Audio</button>
+        <button className="btn btn-block" onClick={() => setVoiceOpen(true)}><Ic p={I.mic} /> Record Audio</button>
         <span className="hint" style={{ textAlign: "center" }}>or upload file</span>
       </div>
+
+      <VoiceModal open={voiceOpen} onClose={() => setVoiceOpen(false)} onTranscript={onVoice} />
     </section>
   );
 }
