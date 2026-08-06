@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { I, Ic } from "./icons";
 
-export type View = "home" | "verify" | "learn" | "insights" | "profile";
+export type View =
+  | "home"
+  | "verify"
+  | "learn"
+  | "insights"
+  | "profile"
+  | "settings";
 
 const NAV: { key: View; label: string; icon: ReactNode }[] = [
   { key: "home", label: "Home", icon: I.home },
@@ -10,6 +16,7 @@ const NAV: { key: View; label: string; icon: ReactNode }[] = [
   { key: "learn", label: "Learn", icon: I.learn },
   { key: "insights", label: "Insights", icon: I.insights },
   { key: "profile", label: "Profile", icon: I.profile },
+  { key: "settings", label: "Settings", icon: I.settings },
 ];
 
 const THEME_KEY = "verify-theme";
@@ -21,7 +28,9 @@ export default function Sidebar({
   active: View;
   onNavigate: (v: View) => void;
 }) {
-  const [lightMode, setLightMode] = useState(() => localStorage.getItem(THEME_KEY) === "light");
+  const [lightMode, setLightMode] = useState(
+    () => localStorage.getItem(THEME_KEY) === "light",
+  );
 
   useEffect(() => {
     document.documentElement.classList.toggle("light-mode", lightMode);
@@ -30,13 +39,14 @@ export default function Sidebar({
 
   return (
     <aside className="sidebar">
-      <button
-        className="brand brand-btn"
-        onClick={() => onNavigate("home")}
-      >
+      <button className="brand brand-btn" onClick={() => onNavigate("home")}>
         <div className="brand-mark" />
         <div className="brand-name">
-          Verify.<br />Understand.<br />Share Wisely.
+          Verify.
+          <br />
+          Understand.
+          <br />
+          Share Wisely.
         </div>
       </button>
       <nav className="nav">
@@ -63,13 +73,6 @@ export default function Sidebar({
         >
           <span>Dark Mode</span>
           <span className={`switch ${lightMode ? "switch-off" : ""}`} />
-        </div>
-        <div
-          className="side-toggle"
-          onClick={() => onNavigate("profile")}
-          style={{ cursor: "pointer" }}
-        >
-          <span>Settings</span>
         </div>
       </div>
     </aside>
