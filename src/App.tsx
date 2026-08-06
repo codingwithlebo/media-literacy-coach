@@ -40,9 +40,8 @@ export default function App() {
             status={status}
             result={result}
             onVerify={() => analyze(input)}
-            onVoice={(t) => { setInput(t); analyze(t); }}
+            onVoice={(t) => { void handleVoiceComplete(t); }}
             onLearn={() => setView("learn")}
-            
           />
         )}
         {view === "verify" && (
