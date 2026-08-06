@@ -56,7 +56,11 @@ export default function InsightsPage() {
   const BREAKDOWN: BreakdownItem[] = [
     { label: "Reliable", pct: pct(stats?.likely_real ?? 0), band: "high" },
     { label: "Uncertain", pct: pct(stats?.uncertain ?? 0), band: "med" },
-    { label: "Low credibility", pct: pct(stats?.likely_fake ?? 0), band: "low" },
+    {
+      label: "Low credibility",
+      pct: pct(stats?.likely_fake ?? 0),
+      band: "low",
+    },
   ];
 
   return (
@@ -105,3 +109,5 @@ export default function InsightsPage() {
     </div>
   );
 }
+
+//test comment
