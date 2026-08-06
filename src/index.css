@@ -78,6 +78,8 @@ button { font: inherit; cursor: pointer; }
   border-radius: 50% / 42%;
   flex: none;
   margin-top: 2px;
+  color: var(--sage);
+  transform: rotate(-6deg);
 }
 .brand-name {
   font-family: var(--font-display);
