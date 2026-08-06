@@ -2,12 +2,14 @@ import { useState } from "react";
 import { I, Ic } from "./icons";
 import VoiceModal from "./voiceModal";
 
+
 interface Props {
   value: string;
   onChange: (v: string) => void;
   onVerify: () => void;
   onVoice: (text: string) => void; // transcript -> analyze
   busy: boolean;
+ 
 }
 
 export default function IntakeGrid({ value, onChange, onVerify, onVoice, busy }: Props) {
