@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 type AnalysisDetail = "concise" | "balanced" | "detailed";
 
@@ -24,7 +25,6 @@ function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     const saved = raw ? JSON.parse(raw) : {};
-    // respect saved theme if present and valid, otherwise fall back to verify-theme key
     const THEME_KEY = "verify-theme";
     const storedTheme =
       (saved.theme as string) ||
@@ -39,6 +39,7 @@ function loadSettings(): Settings {
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(loadSettings);
+  const { lang, setLang } = useLanguage();
 
   const THEME_KEY = "verify-theme";
 
@@ -46,7 +47,6 @@ export default function SettingsPage() {
     localStorage.setItem(KEY, JSON.stringify(settings));
   }, [settings]);
 
-  // apply theme immediately when changed
   useEffect(() => {
     try {
       document.documentElement.classList.toggle(
@@ -168,11 +168,12 @@ export default function SettingsPage() {
             ).map(([code, label]) => (
               <button
                 key={code}
-                className={
-                  "seg-btn " + (settings.language === code ? "active" : "")
-                }
-                onClick={() => update("language", code)}
-                aria-pressed={settings.language === code}
+                className={"seg-btn " + (lang === code ? "active" : "")}
+                onClick={() => {
+                  setLang(code as "en" | "es" | "fr");
+                  update("language", code);
+                }}
+                aria-pressed={lang === code}
               >
                 {label}
               </button>
