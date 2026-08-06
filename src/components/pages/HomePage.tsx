@@ -3,6 +3,13 @@ import { RecentAnalyses, LearnBanner } from "../RecentAnalyses";
 import AnalysisReport from "../AnalysisReport";
 import type { Analysis } from "../../types/analysis";
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 interface Props {
   input: string;
   setInput: (v: string) => void;
@@ -16,7 +23,7 @@ interface Props {
 export default function HomePage({ input, setInput, status, result, onVerify, onLearn, onVoiceComplete }: Props) {
   return (
     <>
-      <p className="greeting">Good afternoon,</p>
+      <p className="greeting">{getGreeting()},</p>
       <h1 className="headline">What would you like to verify today?</h1>
       <p className="subhead">
         Paste a link, upload a file or record audio. We&rsquo;ll help you understand the truth behind it.
