@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { I, Ic } from "./icons";
+import { useLanguage } from "../context/LanguageContext";
 
 export type View =
   | "home"
@@ -9,15 +10,6 @@ export type View =
   | "insights"
   | "profile"
   | "settings";
-
-const NAV: { key: View; label: string; icon: ReactNode }[] = [
-  { key: "home", label: "Home", icon: I.home },
-  { key: "verify", label: "Verify", icon: I.verify },
-  { key: "learn", label: "Learn", icon: I.learn },
-  { key: "insights", label: "Insights", icon: I.insights },
-  { key: "profile", label: "Profile", icon: I.profile },
-  { key: "settings", label: "Settings", icon: I.settings },
-];
 
 const THEME_KEY = "verify-theme";
 
@@ -28,6 +20,7 @@ export default function Sidebar({
   active: View;
   onNavigate: (v: View) => void;
 }) {
+  const { t } = useLanguage();
   const [lightMode, setLightMode] = useState(
     () => localStorage.getItem(THEME_KEY) === "light",
   );
@@ -37,16 +30,25 @@ export default function Sidebar({
     localStorage.setItem(THEME_KEY, lightMode ? "light" : "dark");
   }, [lightMode]);
 
+  const NAV: { key: View; label: string; icon: ReactNode }[] = [
+    { key: "home", label: t("nav_home"), icon: I.home },
+    { key: "verify", label: t("nav_verify"), icon: I.verify },
+    { key: "learn", label: t("nav_learn"), icon: I.learn },
+    { key: "insights", label: t("nav_insights"), icon: I.insights },
+    { key: "profile", label: t("nav_profile"), icon: I.profile },
+    { key: "settings", label: t("nav_settings"), icon: I.settings },
+  ];
+
   return (
     <aside className="sidebar">
       <button className="brand brand-btn" onClick={() => onNavigate("home")}>
         <div className="brand-mark" />
         <div className="brand-name">
-          Verify.
+          {t("tagline1")}
           <br />
-          Understand.
+          {t("tagline2")}
           <br />
-          Share Wisely.
+          {t("tagline3")}
         </div>
       </button>
       <nav className="nav">
@@ -71,7 +73,7 @@ export default function Sidebar({
           onClick={() => setLightMode((v) => !v)}
           style={{ cursor: "pointer" }}
         >
-          <span>Dark Mode</span>
+          <span>{t("dark_mode")}</span>
           <span className={`switch ${lightMode ? "switch-off" : ""}`} />
         </div>
       </div>
