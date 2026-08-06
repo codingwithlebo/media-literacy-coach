@@ -28,7 +28,10 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={view as View} onNavigate={setView} />
+      <Sidebar
+         active={view === "settings" ? "home" : view}
+        onNavigate={(nextView) => setView(nextView)}
+      />
       <main className="main">
         {view === "home" && (
           <HomePage
