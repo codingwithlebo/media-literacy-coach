@@ -5,7 +5,6 @@ import VerifyPage from "./components/pages/VerifyPage";
 import LearnPage from "./components/pages/LearnPage";
 import InsightsPage from "./components/pages/InsightsPage";
 import ProfilePage from "./components/pages/ProfilePage";
-import SettingsPage from "./components/pages/SettingsPage";
 import { useAnalyze } from "./hooks/useAnalyze";
 import "./index.css";
 
@@ -28,7 +27,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={view} onNavigate={setView} />
+      <Sidebar active={view} onNavigate={(nextView) => setView(nextView)} />
       <main className="main">
         {view === "home" && (
           <HomePage
@@ -37,8 +36,8 @@ export default function App() {
             status={status}
             result={result}
             onVerify={() => analyze(input)}
+            onVoice={(t) => { void handleVoiceComplete(t); }}
             onLearn={() => setView("learn")}
-            onVoiceComplete={handleVoiceComplete}
           />
         )}
         {view === "verify" && (
@@ -53,7 +52,6 @@ export default function App() {
         {view === "learn" && <LearnPage />}
         {view === "insights" && <InsightsPage />}
         {view === "profile" && <ProfilePage />}
-        {view === "settings" && <SettingsPage />}
       </main>
     </div>
   );

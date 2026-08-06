@@ -90,17 +90,23 @@ Focus on:
 
 @router.post("", response_model=CredibilityCheckResponse)
 def check_credibility(payload: CredibilityCheckRequest) -> CredibilityCheckResponse:
-    if client is None:
 
+    if client is None:
+        print("Using heuristic checker")
         result = heuristic_check(payload.content)
+
     else:
+        print("Using Gemini AI")
+
         try:
             response = client.models.generate_content(
                 model=MODEL,
                 contents=f"""
 {CONTENT_GUIDANCE.get(payload.content_type, "")}
+
 Content Type:
 {payload.content_type}
+
 Content:
 {payload.content}
 """,
@@ -110,9 +116,12 @@ Content:
                     "temperature": 0.3,
                 },
             )
+
             data = json.loads(response.text)
             result = CredibilityCheckResponse(**data)
-        except Exception:
+
+        except Exception as e:
+            print("Gemini Error:", e)
             result = heuristic_check(payload.content)
 
     save_analysis(
