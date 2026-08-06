@@ -40,7 +40,6 @@ type Point = {
 };
 
 export default function InsightsPage() {
-  const { t } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [selectedInsightId] = useState<NodeId | null>(null);
   const [pointer, setPointer] = useState<Point | null>(null);
@@ -255,7 +254,6 @@ export default function InsightsPage() {
           layoutRef.current[entry.id] = buildLayout(content, width, height);
         });
 
-
         particlesRef.current = particles;
       };
 
@@ -442,7 +440,6 @@ export default function InsightsPage() {
               </div>
               <div className="card-body">
                 <p>{card.description}</p>
-
               </div>
             </motion.button>
           );
