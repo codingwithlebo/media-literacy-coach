@@ -1,32 +1,23 @@
 import { useRef, useState } from "react";
 import { I, Ic } from "./icons";
+import VoiceModal from "./voiceModal";
 
 interface Props {
   value: string;
   onChange: (v: string) => void;
   onVerify: () => void;
+  onVoice: (text: string) => void;
   busy: boolean;
-  onVoiceComplete?: (transcript: string) => void;
 }
 
-type SpeechRecognitionCtor = new () => any;
-
-export default function IntakeGrid({
-  value,
-  onChange,
-  onVerify,
-  busy,
-  onVoiceComplete,
-}: Props) {
+export default function IntakeGrid({ value, onChange, onVerify, onVoice, busy }: Props) {
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const articleInputRef = useRef<HTMLInputElement | null>(null);
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [articleBusy, setArticleBusy] = useState(false);
   const [articleError, setArticleError] = useState<string | null>(null);
-  const [recording, setRecording] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
 
   async function handleScreenshotFile(file: File) {
     setOcrError(null);
@@ -37,9 +28,7 @@ export default function IntakeGrid({
       onChange(data.text.trim());
     } catch (err) {
       console.error("OCR failed:", err);
-      setOcrError(
-        "Couldn't read text from that image. Try a clearer screenshot.",
-      );
+      setOcrError("Couldn't read text from that image. Try a clearer screenshot.");
     } finally {
       setOcrBusy(false);
     }
@@ -94,79 +83,10 @@ export default function IntakeGrid({
     }
   }
 
-  function toggleRecording() {
-    setVoiceError(null);
-
-    if (recording) {
-      recognitionRef.current?.stop();
-      setRecording(false);
-      return;
-    }
-
-    const SpeechRecognition: SpeechRecognitionCtor | undefined =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setVoiceError(
-        "Voice recording needs Chrome or Edge — not supported in this browser.",
-      );
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    let finalTranscript = "";
-
-    recognition.onresult = (event: any) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
-        } else {
-          interim += transcript;
-        }
-      }
-      onChange((finalTranscript + interim).trim());
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      setVoiceError(
-        "Couldn't hear you clearly — check your microphone permission and try again.",
-      );
-      setRecording(false);
-    };
-
-    recognition.onend = () => {
-      setRecording(false);
-      const final = finalTranscript.trim();
-      if (final && typeof (arguments[0] as any) === "undefined") {
-        // no-op
-      }
-      // call optional completion callback
-      if (final && onVoiceComplete) {
-        try {
-          onVoiceComplete(final);
-        } catch {}
-      }
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setRecording(true);
-  }
-
   return (
     <section className="intake">
       <div className="intake-card">
-        <div className="intake-icon">
-          <Ic p={I.text} />
-        </div>
+        <div className="intake-icon"><Ic p={I.text} /></div>
         <div>
           <h3>Paste Text or Link</h3>
           <p>Paste a news article, social media post, or any link.</p>
@@ -177,23 +97,14 @@ export default function IntakeGrid({
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
-        <button
-          className="btn btn-primary btn-block"
-          onClick={onVerify}
-          disabled={busy || !value.trim()}
-        >
+        <button className="btn btn-primary btn-block" onClick={onVerify} disabled={busy || !value.trim()}>
           {busy ? "Verifying…" : "Verify this"}
         </button>
       </div>
 
       <div className="intake-card">
-        <div className="intake-icon">
-          <Ic p={I.image} />
-        </div>
-        <div>
-          <h3>Upload Screenshot</h3>
-          <p>Upload an image or screenshot to analyze.</p>
-        </div>
+        <div className="intake-icon"><Ic p={I.image} /></div>
+        <div><h3>Upload Screenshot</h3><p>Upload an image or screenshot to analyze.</p></div>
         <input
           ref={fileInputRef}
           type="file"
@@ -216,31 +127,14 @@ export default function IntakeGrid({
             if (file) handleScreenshotFile(file);
           }}
         >
-          {ocrBusy ? (
-            "Reading text…"
-          ) : (
-            <>
-              Drop image here
-              <br />
-              or browse
-            </>
-          )}
+          {ocrBusy ? "Reading text…" : (<>Drop image here<br />or browse</>)}
         </div>
-        {ocrError && (
-          <span className="hint" style={{ color: "#f87171" }}>
-            {ocrError}
-          </span>
-        )}
+        {ocrError && <span className="hint" style={{ color: "#f87171" }}>{ocrError}</span>}
       </div>
 
       <div className="intake-card">
-        <div className="intake-icon">
-          <Ic p={I.file} />
-        </div>
-        <div>
-          <h3>Upload Article or File</h3>
-          <p>Upload a file in any format to analyze.</p>
-        </div>
+        <div className="intake-icon"><Ic p={I.file} /></div>
+        <div><h3>Upload Article or File</h3><p>Upload a file in any format to analyze.</p></div>
         <input
           ref={articleInputRef}
           type="file"
@@ -263,41 +157,20 @@ export default function IntakeGrid({
             if (file) handleArticleFile(file);
           }}
         >
-          {articleBusy ? (
-            "Reading file…"
-          ) : (
-            <>
-              Drop file here
-              <br />
-              or browse
-            </>
-          )}
+          {articleBusy ? "Reading file…" : (<>Drop file here<br />or browse</>)}
         </div>
         <span className="hint">PDF, DOCX, TXT</span>
-        {articleError && (
-          <span className="hint" style={{ color: "#f87171" }}>
-            {articleError}
-          </span>
-        )}
+        {articleError && <span className="hint" style={{ color: "#f87171" }}>{articleError}</span>}
       </div>
 
       <div className="intake-card">
-        <div className="intake-icon">
-          <Ic p={I.mic} />
-        </div>
-        <div>
-          <h3>Record or Upload Voice</h3>
-          <p>Speak and we'll transcribe it live.</p>
-        </div>
-        <button className="btn btn-block" onClick={toggleRecording}>
-          <Ic p={I.mic} /> {recording ? "Stop Recording" : "Record Audio"}
-        </button>
-        {voiceError && (
-          <span className="hint" style={{ color: "#f87171" }}>
-            {voiceError}
-          </span>
-        )}
+        <div className="intake-icon"><Ic p={I.mic} /></div>
+        <div><h3>Record or Upload Voice</h3><p>Upload a voice note or record directly.</p></div>
+        <button className="btn btn-block" onClick={() => setVoiceOpen(true)}><Ic p={I.mic} /> Record Audio</button>
+        <span className="hint" style={{ textAlign: "center" }}>or upload file</span>
       </div>
+
+      <VoiceModal open={voiceOpen} onClose={() => setVoiceOpen(false)} onTranscript={onVoice} />
     </section>
   );
 }
