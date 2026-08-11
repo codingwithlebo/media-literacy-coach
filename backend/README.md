@@ -1,85 +1,264 @@
-# Media Literacy Coach — Backend
+# Media Literacy Coach
 
-A FastAPI backend providing a credibility-checking API for the Media Literacy
-Coach project (UNESCO Youth Hackathon 2026).
+An AI-powered web application designed to help users identify and understand misinformation. Instead of simply telling users whether information is "true" or "false," the application provides a credibility assessment, explains potential warning signs, and encourages users to think critically about the information they encounter.
 
-## What it does
+## Features
 
-- **`POST /check`** — analyzes text content (articles, social posts, job
-  listings, messages) and returns a credibility score, verdict, plain-language
-  explanation, red flags, and suggested sources to verify with.
-  - Uses Google Gemini if a free API key is configured.
-  - Falls back automatically to a rule-based pattern checker if no key is set,
-    or if the AI call fails for any reason (quota, network, etc.). This means
-    the endpoint always works — no API key required to demo it.
-- **`POST /transcribe`** — transcribes an uploaded audio file to text using
-  Gemini's multimodal audio support. Requires a Gemini API key.
-- **`POST /ocr`** — extracts text from an uploaded screenshot/image using
-  local Tesseract OCR. No API key needed, but requires the Tesseract program
-  installed separately (see below).
-- **`GET /`** — health check.
+* **Text Credibility Checking** — Analyze written content and receive a credibility score, assessment, explanation, evidence, and potential red flags.
+* **Voice & Transcription** — Record or provide voice input and convert speech into text for analysis.
+* **OCR** — Extract text from images so that visual content can also be analyzed.
+* **AI-Powered Analysis** — Uses OpenRouter to provide AI-assisted credibility analysis.
+* **Verification Journey** — Shows users the factors that contributed to an assessment.
+* **Insights Dashboard** — Provides statistics and an overview of analyzed content.
+* **Learning Resources** — Helps users develop stronger media-literacy and fact-checking skills.
+* **Multiple Content Types** — Supports articles, social media posts, job posts, and messages.
+* **Fallback Analysis** — Uses heuristic-based checks when AI analysis is unavailable.
 
-Interactive docs (test every endpoint from the browser, no code needed):
-once running, open **http://localhost:8000/docs**
+## How It Works
 
-## Setup
+The application follows a simple analysis flow:
 
-**Requirements:** Python 3.12 (recommended — newer versions like 3.13/3.14
-currently lack prebuilt wheels for some dependencies on Windows and will fail
-to install). Get it at https://www.python.org/downloads/release/python-31210/
-if you don't already have it — check with `py -0` first.
+1. The user provides content through text, voice, or an image.
+2. Voice input can be transcribed and images can be processed using OCR.
+3. The content is sent to the FastAPI backend.
+4. The backend analyzes the content using OpenRouter AI.
+5. The AI evaluates credibility indicators, supporting evidence, and potential red flags.
+6. The backend returns a structured credibility assessment.
+7. The frontend displays the results in an easy-to-understand analysis report.
 
-```powershell
+The application is designed to support **critical thinking rather than provide absolute certainty**. A credibility score should therefore be treated as guidance for further verification rather than proof that a claim is true or false.
+
+## Technology Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+
+### Backend
+
+* Python
+* FastAPI
+* Uvicorn
+* Pydantic
+
+### AI
+
+* OpenRouter API
+
+### Additional Technologies
+
+* OCR processing
+* Speech transcription
+* Git & GitHub
+
+> **Database:** The current version does not rely on a dedicated database as a core requirement.
+
+## Project Structure
+
+```text
+media-literacy-coach/
+│
+├── backend/
+│   ├── app/
+│   │   ├── routers/
+│   │   ├── models.py
+│   │   ├── heuristics.py
+│   │   ├── ai_client.py
+│   │   └── main.py
+│   ├── .env.example
+│   └── requirements.txt
+│
+├── src/
+│   ├── components/
+│   ├── hooks/
+│   ├── pages/
+│   ├── data/
+│   ├── types/
+│   └── App.tsx
+│
+├── package.json
+└── README.md
+```
+
+## Running the Project Locally
+
+### Prerequisites
+
+Make sure the following are installed:
+
+* Node.js
+* Python 3.12 or compatible Python version
+* Git
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/codingwithlebo/media-literacy-coach.git
+cd media-literacy-coach
+```
+
+### 2. Set up the backend
+
+```bash
 cd backend
-py -3.12 -m venv venv
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```bash
 venv\Scripts\activate
-pip install --upgrade pip
+```
+
+Install the backend dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
 
-Copy the environment template and (optionally) add a real key:
+Create your local environment file:
 
-```powershell
+```bash
 copy .env.example .env
 ```
 
-The app works with **no key at all** — `/check` uses the rule-based fallback
-automatically. If you want smarter AI-powered analysis or voice transcription,
-get a **free** Gemini key (no credit card needed) at
-https://aistudio.google.com/apikey and paste it into `.env` as
-`GEMINI_API_KEY=...`.
+Add the required API key to `.env`.
 
-## Running
+**Never commit your real API key to GitHub.**
 
-```powershell
+Start the backend:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-Server runs at `http://localhost:8000`. The `--reload` flag auto-restarts on
-code changes.
+The API should then be available at:
 
-## OCR setup (optional, only needed for the `/ocr` endpoint)
+```text
+http://127.0.0.1:8000
+```
 
-`pytesseract` (the Python package, already in `requirements.txt`) is just a
-wrapper — it needs the actual Tesseract program installed separately:
+FastAPI documentation is available at:
 
-- Windows: download from https://github.com/UB-Mannheim/tesseract/wiki
-- After installing, you may need to point `pytesseract` to it if it's not on
-  your PATH — see the pytesseract docs if `/ocr` errors out.
+```text
+http://127.0.0.1:8000/docs
+```
 
-## Project structure
-## CORS
+### 3. Start the frontend
 
-The frontend origin is pre-configured for `http://localhost:3000` (Next.js
-default dev port). Add your deployed frontend URL to `app/main.py` under
-`allow_origins` once it's live.
+Open a new terminal from the project root:
 
-## Notes for the team
+```bash
+cd media-literacy-coach
+npm install
+npm run dev
+```
 
-- `.env` is gitignored — never commit real API keys.
-- The heuristic fallback in `/check` is intentionally simple pattern-matching
-  (urgency language, requests for sensitive info, suspicious domains, chain-
-  message patterns, etc.) — it's a safety net for demos, not a replacement
-  for the AI-powered check.
-- If billing/quota becomes an issue with any AI provider, the app keeps
-  working via the fallback — nothing breaks.
+Vite will provide the local frontend address in the terminal.
+
+## Environment Variables
+
+The backend uses environment variables for API credentials.
+
+Example:
+
+```env
+OPENAI_API_KEY=your-openrouter-key-here
+```
+
+The variable name is kept according to the current backend configuration, even though the actual AI provider is OpenRouter.
+
+**Do not place real API keys in source code, GitHub, README files, or other publicly accessible files.**
+
+## API
+
+The main credibility endpoint is:
+
+```text
+POST /check
+```
+
+It accepts content and a content type.
+
+Example request:
+
+```json
+{
+  "content": "Example content to analyze.",
+  "content_type": "article"
+}
+```
+
+Supported content types include:
+
+```text
+article
+social_post
+job_post
+message
+```
+
+The API returns a structured credibility assessment containing information such as:
+
+* credibility score
+* verdict
+* explanation
+* evidence
+* red flags
+* learning topic
+* suggested sources
+
+## Fallback Analysis
+
+If the AI service is unavailable, the backend can fall back to a heuristic-based analysis.
+
+The heuristic checker looks for common signals such as:
+
+* false urgency
+* requests for sensitive information
+* chain-message patterns
+* vague or emotional sourcing
+* suspicious domains
+* excessive capitalization
+
+This ensures the application can still provide a basic assessment when the external AI service cannot be reached.
+
+## Security
+
+API credentials should always be stored as environment variables.
+
+For local development:
+
+```text
+.env
+```
+
+should remain private and should not be committed to Git.
+
+For production deployment, API credentials should be configured through the hosting platform's environment-variable/secret management system.
+
+## Team
+
+This project was developed by:
+
+* **Malebo Nkuna**
+* **Lerato Thungo**
+* **Owethu Jezile**
+* **Mpho Mangena**
+
+## Project Goal
+
+The goal of Media Literacy Coach is to make media literacy more accessible by helping people pause, question, and evaluate information before accepting or sharing it.
+
+The application is intended to encourage users to ask:
+
+> **Who created this information? What evidence supports it? What might be missing?**
+
+Rather than replacing human judgment, Media Literacy Coach acts as a tool to support better-informed decisions and stronger critical-thinking habits.
