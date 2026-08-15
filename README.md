@@ -15,10 +15,10 @@ Users can paste text, upload screenshots or documents, or use their voice to sub
 ## 🚀 Live Demo
 
 **Try Verify:**
-https://media-literacy-coach.vercel.app/
+[https://media-literacy-coach.vercel.app/](https://media-literacy-coach.vercel.app/)
 
 **GitHub Repository:**
-https://github.com/codingwithlebo/media-literacy-coach
+[https://github.com/codingwithlebo/media-literacy-coach](https://github.com/codingwithlebo/media-literacy-coach)
 
 ---
 
@@ -26,24 +26,24 @@ https://github.com/codingwithlebo/media-literacy-coach
 
 Misinformation spreads through the platforms people use every day:
 
-* WhatsApp messages
-* Social media posts
-* Screenshots
-* News articles
-* Job advertisements
-* Voice notes
-* AI-generated content
+- WhatsApp messages
+- Social media posts
+- Screenshots
+- News articles
+- Job advertisements
+- Voice notes
+- AI-generated content
 
 The problem is not only that misinformation exists. It is also that many people are not given the tools or knowledge to understand **why** something may be misleading.
 
 People may encounter a suspicious message but not know:
 
-* Who created it?
-* Is the source trustworthy?
-* What evidence supports the claim?
-* Is emotional language being used to manipulate them?
-* Is there pressure to act immediately?
-* Can the information be independently verified?
+- Who created it?
+- Is the source trustworthy?
+- What evidence supports the claim?
+- Is emotional language being used to manipulate them?
+- Is there pressure to act immediately?
+- Can the information be independently verified?
 
 Traditional fact-checking approaches can also require users to already have strong digital-literacy skills.
 
@@ -61,14 +61,14 @@ Users can submit information they are unsure about and receive an understandable
 
 The platform can analyse:
 
-* Written claims
-* Articles
-* Social media posts
-* Messages
-* Job advertisements
-* Screenshots
-* Documents
-* Voice input
+- Written claims
+- Articles
+- Social media posts
+- Messages
+- Job advertisements
+- Screenshots
+- Documents
+- Voice input
 
 The result does not simply say **"true" or "false."**
 
@@ -82,13 +82,13 @@ Verify also helps users develop the skills needed to evaluate information indepe
 
 Users can complete short challenges covering topics such as:
 
-* Identifying suspicious sources
-* Recognising emotional language
-* Detecting urgency and manipulation
-* Evaluating evidence
-* Lateral reading
-* Recognising misleading claims
-* Understanding AI-generated content
+- Identifying suspicious sources
+- Recognising emotional language
+- Detecting urgency and manipulation
+- Evaluating evidence
+- Lateral reading
+- Recognising misleading claims
+- Understanding AI-generated content
 
 Gamification elements such as **streaks, coins, challenges, and progress tracking** encourage users to keep learning.
 
@@ -104,12 +104,12 @@ The goal is to help users become **better at evaluating information themselves**
 
 Submit information and receive:
 
-* Credibility score
-* Verdict
-* Plain-language explanation
-* Evidence indicators
-* Potential red flags
-* Suggested sources for independent verification
+- Credibility score
+- Verdict
+- Plain-language explanation
+- Evidence indicators
+- Potential red flags
+- Suggested sources for independent verification
 
 The goal is to help users understand the reasoning behind an assessment rather than blindly trust an AI-generated answer.
 
@@ -125,11 +125,11 @@ Verify extracts relevant text using OCR and sends the extracted content through 
 
 This allows users to investigate information from sources such as:
 
-* WhatsApp screenshots
-* Social media posts
-* Online advertisements
-* News screenshots
-* Images containing claims
+- WhatsApp screenshots
+- Social media posts
+- Online advertisements
+- News screenshots
+- Images containing claims
 
 ---
 
@@ -137,9 +137,9 @@ This allows users to investigate information from sources such as:
 
 Users can provide supported documents such as:
 
-* PDF
-* DOCX
-* TXT
+- PDF
+- DOCX
+- TXT
 
 Text is extracted from the document before being passed into the analysis workflow.
 
@@ -163,14 +163,14 @@ Verify uses an **OpenAI-compatible AI client with OpenRouter support**.
 
 The analysis considers signals including:
 
-* Source clarity
-* Source credibility
-* Emotional or manipulative language
-* Missing or vague sourcing
-* Urgency and pressure tactics
-* Suspicious requests
-* Whether claims are independently verifiable
-* Other potential misinformation indicators
+- Source clarity
+- Source credibility
+- Emotional or manipulative language
+- Missing or vague sourcing
+- Urgency and pressure tactics
+- Suspicious requests
+- Whether claims are independently verifiable
+- Other potential misinformation indicators
 
 The AI acts as an **assistive reasoning layer**, rather than an unquestionable source of truth.
 
@@ -180,22 +180,22 @@ The AI acts as an **assistive reasoning layer**, rather than an unquestionable s
 
 AI services can become unavailable because of:
 
-* Missing API credentials
-* Rate limits
-* Network problems
-* Service interruptions
+- Missing API credentials
+- Rate limits
+- Network problems
+- Service interruptions
 
 Verify therefore includes a **rule-based heuristic fallback**.
 
 The fallback can identify common warning signs such as:
 
-* False urgency
-* Requests for sensitive information
-* Chain-message patterns
-* Suspicious domains
-* Lookalike domains
-* Excessive emotional language
-* Excessive capitalisation
+- False urgency
+- Requests for sensitive information
+- Chain-message patterns
+- Suspicious domains
+- Lookalike domains
+- Excessive emotional language
+- Excessive capitalisation
 
 This means the application can still provide a basic credibility assessment even when the external AI service is unavailable.
 
@@ -207,16 +207,16 @@ The Insights dashboard gives users an overview of their analysed content.
 
 It includes information such as:
 
-* Total items checked
-* Average credibility score
-* Likely misleading content
-* Likely credible content
-* Uncertain content
-* Credibility breakdown by reliability band
+- Total items checked
+- Average credibility score
+- Likely misleading content
+- Likely credible content
+- Uncertain content
+- Credibility breakdown by reliability band
 
 Example:
 
-```json
+```
 {
   "total": 30,
   "likely_fake": 10,
@@ -224,6 +224,7 @@ Example:
   "uncertain": 1,
   "avg_score": 62
 }
+
 ```
 
 ---
@@ -236,10 +237,10 @@ The **Learn** experience encourages users to practise media-literacy skills thro
 
 Users can build progress through:
 
-* 🪙 Coins
-* 🔥 Streaks
-* 🏆 Challenges
-* 📈 Progress tracking
+- 🪙 Coins
+- 🔥 Streaks
+- 🏆 Challenges
+- 📈 Progress tracking
 
 The purpose of gamification is to turn media literacy into a **continuous learning habit**, rather than something people only think about after encountering misinformation.
 
@@ -247,7 +248,7 @@ The purpose of gamification is to turn media literacy into a **continuous learni
 
 # 🏗️ System Architecture
 
-```text
+```
                          ┌─────────────────────┐
                          │        User         │
                          └──────────┬──────────┘
@@ -288,6 +289,7 @@ The purpose of gamification is to turn media literacy into a **continuous learni
                          ┌─────────────────────┐
                          │        User         │
                          └─────────────────────┘
+
 ```
 
 ---
@@ -296,44 +298,44 @@ The purpose of gamification is to turn media literacy into a **continuous learni
 
 ### Frontend
 
-* **React**
-* **TypeScript**
-* **Vite**
-* **Tesseract.js**
-* Browser Speech APIs
+- **React**
+- **TypeScript**
+- **Vite**
+- **Tesseract.js**
+- Browser Speech APIs
 
 ### Backend
 
-* **Python**
-* **FastAPI**
-* **Uvicorn**
+- **Python**
+- **FastAPI**
+- **Uvicorn**
 
 ### AI
 
-* **OpenRouter**
-* OpenAI-compatible AI client
-* AI-powered credibility reasoning
+- **OpenRouter**
+- OpenAI-compatible AI client
+- AI-powered credibility reasoning
 
 ### Processing
 
-* **Tesseract.js** for OCR
-* Document text extraction
-* Voice transcription
+- **Tesseract.js** for OCR
+- Document text extraction
+- Voice transcription
 
 ### Deployment
 
-* **Vercel** — Frontend
-* FastAPI backend — deployed API
+- **Vercel** — Frontend
+- FastAPI backend — deployed API
 
 ### Version Control
 
-* **GitHub**
+- **GitHub**
 
 ---
 
 # 📁 Project Structure
 
-```text
+```
 media-literacy-coach/
 │
 ├── .vscode/
@@ -354,6 +356,7 @@ media-literacy-coach/
 ├── tsconfig.json
 ├── vite.config.ts
 └── README.md
+
 ```
 
 The frontend is located directly in the repository root, with the main application source code inside `src/`.
@@ -366,25 +369,27 @@ Verify uses a **FastAPI backend** to process analysis requests.
 
 ### Core endpoints
 
-| Endpoint      | Method | Purpose                           |
-| ------------- | ------ | --------------------------------- |
-| `/check`      | `POST` | Analyse submitted content         |
-| `/transcribe` | `POST` | Process voice/audio transcription |
-| `/ocr`        | `POST` | Process image text extraction     |
+| EndpointMethodPurpose |        |                                   |
+| --------------------- | ------ | --------------------------------- |
+| `/check`              | `POST` | Analyse submitted content         |
+| `/transcribe`         | `POST` | Process voice/audio transcription |
+| `/ocr`                | `POST` | Process image text extraction     |
 
 ### Example credibility request
 
-```http
+```
 POST /check
 Content-Type: application/json
+
 ```
 
 Example:
 
-```json
+```
 {
   "text": "Example claim to analyse"
 }
+
 ```
 
 The backend processes the submitted content and returns a structured credibility assessment.
@@ -397,20 +402,21 @@ The backend processes the submitted content and returns a structured credibility
 
 Make sure you have:
 
-* Node.js
-* npm
-* Python 3.10+
-* pip
-* Git
+- Node.js
+- npm
+- Python 3.10+
+- pip
+- Git
 
 ---
 
 ## 1. Clone the repository
 
-```bash
+```
 git clone https://github.com/codingwithlebo/media-literacy-coach.git
 
 cd media-literacy-coach
+
 ```
 
 ---
@@ -421,8 +427,9 @@ The frontend is located in the repository root.
 
 Run:
 
-```bash
+```
 npm install
+
 ```
 
 ---
@@ -431,28 +438,32 @@ npm install
 
 Navigate to the backend directory:
 
-```bash
+```
 cd backend
+
 ```
 
 Install the Python dependencies:
 
-```bash
+```
 pip install -r requirements.txt
+
 ```
 
 Create your environment file if the project provides an `.env.example`:
 
-```bash
+```
 cp .env.example .env
+
 ```
 
 Add the required AI provider credentials.
 
 For example:
 
-```env
+```
 OPENROUTER_API_KEY=your_api_key_here
+
 ```
 
 **Never commit real API keys to GitHub.**
@@ -463,8 +474,9 @@ OPENROUTER_API_KEY=your_api_key_here
 
 From the `backend` directory:
 
-```bash
+```
 uvicorn main:app --reload
+
 ```
 
 The API will start on the local FastAPI development server.
@@ -477,8 +489,9 @@ Open a second terminal.
 
 From the project root:
 
-```bash
+```
 npm run dev
+
 ```
 
 Vite will provide a local development URL.
@@ -495,8 +508,9 @@ Depending on the configured AI provider, the backend requires the appropriate en
 
 Example:
 
-```env
+```
 OPENROUTER_API_KEY=your_api_key_here
+
 ```
 
 If the AI service is unavailable, Verify can fall back to its rule-based credibility analysis.
@@ -515,10 +529,10 @@ They can submit the message to Verify.
 
 The system can identify signals such as:
 
-* Urgency
-* Prize-based manipulation
-* Sensitive information requests
-* Suspicious language
+- Urgency
+- Prize-based manipulation
+- Sensitive information requests
+- Suspicious language
 
 The user receives an explanation rather than simply being told that the message is "fake."
 
@@ -530,10 +544,10 @@ A user finds an online job advertisement asking applicants to pay a registration
 
 They can submit the advertisement to Verify and receive an assessment highlighting suspicious indicators such as:
 
-* Requests for upfront payment
-* Missing organisation information
-* Pressure to act quickly
-* Unclear source information
+- Requests for upfront payment
+- Missing organisation information
+- Pressure to act quickly
+- Unclear source information
 
 ---
 
@@ -551,13 +565,13 @@ Verify is designed for people who regularly encounter online information but may
 
 Potential users include:
 
-* Students
-* Young people
-* Social media users
-* Job seekers
-* Digital newcomers
-* Communities vulnerable to misinformation
-* Anyone unsure whether online information can be trusted
+- Students
+- Young people
+- Social media users
+- Job seekers
+- Digital newcomers
+- Communities vulnerable to misinformation
+- Anyone unsure whether online information can be trusted
 
 ---
 
@@ -565,12 +579,12 @@ Potential users include:
 
 Misinformation can influence decisions about:
 
-* Health
-* Education
-* Employment
-* Finance
-* Public safety
-* Everyday life
+- Health
+- Education
+- Employment
+- Finance
+- Public safety
+- Everyday life
 
 Verify aims to contribute to a more **digitally literate and critically thinking society** by making credibility analysis easier to access while teaching users the skills to evaluate information independently.
 
@@ -588,10 +602,10 @@ Verify is an **AI-assisted media-literacy tool**, not an authoritative fact-chec
 
 AI-generated assessments can sometimes be:
 
-* Incorrect
-* Incomplete
-* Uncertain
-* Missing important context
+- Incorrect
+- Incomplete
+- Uncertain
+- Missing important context
 
 A credibility score does **not** guarantee that a claim is objectively true or false.
 
@@ -618,13 +632,13 @@ Verify focuses on helping people **understand the reasoning behind an assessment
 Our approach combines:
 
 **AI assistance**
-+
+\+
 **Explainable credibility analysis**
-+
+\+
 **Media-literacy education**
-+
+\+
 **Gamification**
-+
+\+
 **Multiple input formats**
 
 The result is a platform designed not only to help users identify potentially misleading information, but also to help them become **better digital citizens**.
@@ -635,18 +649,18 @@ The result is a platform designed not only to help users identify potentially mi
 
 Potential future development includes:
 
-* Real-time source verification
-* Browser extension
-* WhatsApp integration
-* Multilingual support
-* More advanced fact-checking workflows
-* Trusted-source databases
-* Improved AI-generated-content detection
-* Community reporting
-* Personalised learning paths
-* More accessibility features
-* Expanded analytics
-* Additional document and media formats
+- Real-time source verification
+- Browser extension
+- WhatsApp integration
+- Multilingual support
+- More advanced fact-checking workflows
+- Trusted-source databases
+- Improved AI-generated-content detection
+- Community reporting
+- Personalised learning paths
+- More accessibility features
+- Expanded analytics
+- Additional document and media formats
 
 ---
 
@@ -655,6 +669,17 @@ Potential future development includes:
 **Verify — UNESCO Youth Hackathon 2026**
 
 A youth-led technology project focused on improving digital and media literacy and helping people make more informed decisions about the information they encounter online.
+
+---
+
+# 👥 Team
+
+This project was developed by:
+
+- **Malebo Nkuna**
+- **Lerato Thungo**
+- **Owethu Jezile**
+- **Mpho Mangena**
 
 ---
 
@@ -668,10 +693,10 @@ If you find Verify useful or interesting:
 🤝 Contribute to the project
 
 **Live Demo:**
-https://media-literacy-coach.vercel.app/
+[https://media-literacy-coach.vercel.app/](https://media-literacy-coach.vercel.app/)
 
 **GitHub:**
-https://github.com/codingwithlebo/media-literacy-coach
+[https://github.com/codingwithlebo/media-literacy-coach](https://github.com/codingwithlebo/media-literacy-coach)
 
 ---
 
@@ -680,4 +705,3 @@ https://github.com/codingwithlebo/media-literacy-coach
 > **Don't just trust information. Verify it.**
 >
 > **And more importantly — learn how to verify it yourself.**
-
