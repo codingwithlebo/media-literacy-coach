@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-// Reads the same backend base URL as the analyze hook.
+// Backend URL from Vercel environment variables.
 const API =
-  (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env
-    ?.VITE_API_URL ?? "";
+  (import.meta as unknown as {
+    env?: { VITE_API_URL?: string };
+  }).env?.VITE_API_URL ?? "";
 
 type Phase = "idle" | "recording" | "ready" | "working";
 
@@ -13,18 +14,23 @@ interface Props {
   onTranscript: (text: string) => void;
 }
 
+// Browser speech-recognition helper
 function getRecognition(): any {
   const w = window as any;
-  const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+  const SpeechRecognition =
+    w.SpeechRecognition || w.webkitSpeechRecognition;
 
-  if (!SR) return null;
+  if (!SpeechRecognition) {
+    return null;
+  }
 
-  const r = new SR();
-  r.continuous = true;
-  r.interimResults = true;
-  r.lang = "en-US";
+  const recognition = new SpeechRecognition();
 
-  return r;
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = "en-US";
+
+  return recognition;
 }
 
 export default function VoiceModal({
@@ -57,7 +63,9 @@ export default function VoiceModal({
       hardReset();
     }
 
-    return () => stopEverything();
+    return () => {
+      stopEverything();
+    };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -81,7 +89,7 @@ export default function VoiceModal({
   }
 
   function stopEverything() {
-    if (timerRef.current) {
+    if (timerRef.current !== null) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
@@ -91,10 +99,13 @@ export default function VoiceModal({
     } catch {}
 
     try {
-      mediaRef.current?.stop();
-      mediaRef.current?.stream
-        .getTracks()
-        .forEach((t) => t.stop());
+      if (mediaRef.current) {
+        mediaRef.current.stop();
+
+        mediaRef.current.stream
+          .getTracks()
+          .forEach((track) => track.stop());
+      }
     } catch {}
   }
 
@@ -105,80 +116,97 @@ export default function VoiceModal({
     blobRef.current = null;
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
 
-      const mr = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream);
 
       chunksRef.current = [];
 
-      mr.ondataavailable = (e) => {
-        if (e.data.size) {
-          chunksRef.current.push(e.data);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
         }
       };
 
-      mr.onstop = () => {
+      recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, {
-          type: "audio/webm",
+          type: recorder.mimeType || "audio/webm",
         });
 
         blobRef.current = blob;
 
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+
         setAudioUrl(URL.createObjectURL(blob));
       };
 
-      mr.start();
-      mediaRef.current = mr;
-    } catch {
-      setNote(
-        "We couldn't access your microphone. Check the browser's mic permission (recording also needs https or localhost)."
+      recorder.start();
+
+      mediaRef.current = recorder;
+    } catch (error) {
+      console.error(
+        "Microphone access failed:",
+        error
       );
+
+      setNote(
+        "We couldn't access your microphone. Check your browser's microphone permission. Recording requires HTTPS or localhost."
+      );
+
       return;
     }
 
-    const rec = getRecognition();
+    const recognition = getRecognition();
 
-    if (rec) {
-      rec.onresult = (e: any) => {
+    if (recognition) {
+      recognition.onresult = (event: any) => {
         let interim = "";
 
         for (
-          let k = e.resultIndex;
-          k < e.results.length;
-          k++
+          let index = event.resultIndex;
+          index < event.results.length;
+          index++
         ) {
-          const chunk = e.results[k][0].transcript;
+          const text =
+            event.results[index][0].transcript;
 
-          if (e.results[k].isFinal) {
-            finalRef.current += chunk + " ";
+          if (event.results[index].isFinal) {
+            finalRef.current += text + " ";
           } else {
-            interim += chunk;
+            interim += text;
           }
         }
 
         setTranscript(
-          (finalRef.current + interim).trim()
+          `${finalRef.current}${interim}`.trim()
         );
       };
 
-      rec.onerror = () => {};
+      recognition.onerror = (event: any) => {
+        console.warn(
+          "Speech recognition error:",
+          event?.error
+        );
+      };
 
-      recognitionRef.current = rec;
+      recognitionRef.current = recognition;
 
       try {
-        rec.start();
+        recognition.start();
       } catch {}
     }
 
     setPhase("recording");
     setSeconds(0);
 
-    timerRef.current = window.setInterval(
-      () => setSeconds((s) => s + 1),
-      1000
-    );
+    timerRef.current = window.setInterval(() => {
+      setSeconds((current) => current + 1);
+    }, 1000);
   }
 
   function stopRecording() {
@@ -188,45 +216,99 @@ export default function VoiceModal({
 
     if (!speechSupported && !finalRef.current) {
       setNote(
-        'This browser can\'t transcribe live. Press "Analyze this" to send the audio to the backend, or type what was said below.'
+        'This browser cannot transcribe live. Press "Analyze this" to send the audio to the backend, or type what was said below.'
       );
     }
   }
 
-  // Send an audio blob to the FastAPI backend for transcription.
-  async function transcribeBlob(blob: Blob): Promise<string> {
-    const form = new FormData();
-
-    // FastAPI expects the uploaded file to be named "file".
-    form.append("file", blob, "audio.webm");
-
-    // FastAPI route is /transcribe, not /api/transcribe.
+  /*
+   * Send audio to the FastAPI backend.
+   *
+   * Backend route:
+   * POST /transcribe
+   *
+   * Backend expects:
+   * UploadFile file
+   *
+   * Therefore the FormData field must be called "file".
+   */
+  async function transcribeBlob(
+    blob: Blob
+  ): Promise<string> {
     const baseUrl = API.replace(/\/$/, "");
 
-    const res = await fetch(`${baseUrl}/transcribe`, {
+    if (!baseUrl) {
+      throw new Error(
+        "VITE_API_URL is not configured."
+      );
+    }
+
+    const form = new FormData();
+
+    form.append(
+      "file",
+      blob,
+      "audio.webm"
+    );
+
+    const endpoint = `${baseUrl}/transcribe`;
+
+    console.log(
+      "Sending audio to:",
+      endpoint
+    );
+
+    console.log(
+      "Audio information:",
+      {
+        type: blob.type,
+        size: blob.size,
+      }
+    );
+
+    const response = await fetch(endpoint, {
       method: "POST",
       body: form,
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
+    if (!response.ok) {
+      const errorText =
+        await response.text();
 
       console.error(
-        "Transcription failed:",
-        res.status,
+        "Transcription request failed:",
+        response.status,
         errorText
       );
 
-      throw new Error("Transcription failed");
+      throw new Error(
+        `Transcription failed with status ${response.status}`
+      );
     }
 
-    const data = await res.json();
+    const data = await response.json();
 
-    return (data.text || "").trim();
+    console.log(
+      "Transcription response:",
+      data
+    );
+
+    return (
+      data.text || ""
+    ).trim();
   }
 
   async function handleUpload(file: File) {
     setNote(null);
+
+    console.log(
+      "Selected audio file:",
+      {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      }
+    );
 
     blobRef.current = file;
 
@@ -234,22 +316,29 @@ export default function VoiceModal({
       URL.revokeObjectURL(audioUrl);
     }
 
-    setAudioUrl(URL.createObjectURL(file));
+    setAudioUrl(
+      URL.createObjectURL(file)
+    );
+
     setPhase("working");
 
     try {
-      const text = await transcribeBlob(file);
+      const text =
+        await transcribeBlob(file);
 
       setTranscript(text);
       setPhase("ready");
 
       if (!text) {
         setNote(
-          "The file uploaded, but no speech was detected. You can type the content below."
+          "The audio uploaded successfully, but no speech was detected. You can type the content below."
         );
       }
     } catch (error) {
-      console.error("Voice upload transcription error:", error);
+      console.error(
+        "Audio upload/transcription error:",
+        error
+      );
 
       setPhase("ready");
 
@@ -260,24 +349,32 @@ export default function VoiceModal({
   }
 
   async function submit() {
-    const text = transcript.trim();
+    const text =
+      transcript.trim();
 
+    // If there is already a transcript,
+    // send it directly to the analysis flow.
     if (text) {
       onTranscript(text);
       onClose();
       return;
     }
 
-    // No transcript yet — try to transcribe whatever audio we have.
+    // If there is audio but no transcript,
+    // send the audio to the backend.
     if (blobRef.current) {
       setPhase("working");
       setNote(null);
 
       try {
-        const t = await transcribeBlob(blobRef.current);
+        const result =
+          await transcribeBlob(
+            blobRef.current
+          );
 
-        if (t) {
-          onTranscript(t);
+        if (result) {
+          setTranscript(result);
+          onTranscript(result);
           onClose();
           return;
         }
@@ -287,22 +384,20 @@ export default function VoiceModal({
         setNote(
           "No speech was detected in the audio. You can type the content below and press Analyze."
         );
-
-        return;
       } catch (error) {
         console.error(
-          "Voice transcription error:",
+          "Audio transcription error:",
           error
         );
 
         setPhase("ready");
 
         setNote(
-          "Couldn't transcribe the audio. Type what was said above, then press Analyze."
+          "Couldn't transcribe the audio. Check that the backend is running, then try again. You can also type the content manually."
         );
-
-        return;
       }
+
+      return;
     }
 
     setNote(
@@ -310,14 +405,16 @@ export default function VoiceModal({
     );
   }
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
-  const mmss = `${String(
-    Math.floor(seconds / 60)
-  ).padStart(2, "0")}:${String(seconds % 60).padStart(
-    2,
-    "0"
-  )}`;
+  const mmss =
+    `${String(
+      Math.floor(seconds / 60)
+    ).padStart(2, "0")}:${String(
+      seconds % 60
+    ).padStart(2, "0")}`;
 
   const canSubmit =
     phase !== "working" &&
@@ -331,12 +428,16 @@ export default function VoiceModal({
     >
       <div
         className="modal"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) =>
+          event.stopPropagation()
+        }
         role="dialog"
         aria-modal="true"
       >
         <div className="modal-head">
-          <h3>Record or upload voice</h3>
+          <h3>
+            Record or upload voice
+          </h3>
 
           <button
             className="modal-x"
@@ -350,14 +451,18 @@ export default function VoiceModal({
         <div className="voice-stage">
           <button
             className={`mic-btn ${
-              phase === "recording" ? "is-rec" : ""
+              phase === "recording"
+                ? "is-rec"
+                : ""
             }`}
             onClick={
               phase === "recording"
                 ? stopRecording
                 : startRecording
             }
-            disabled={phase === "working"}
+            disabled={
+              phase === "working"
+            }
             aria-label={
               phase === "recording"
                 ? "Stop recording"
@@ -372,7 +477,8 @@ export default function VoiceModal({
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {phase === "recording" ? (
+              {phase ===
+              "recording" ? (
                 <rect
                   x="7"
                   y="7"
@@ -389,6 +495,7 @@ export default function VoiceModal({
                     height="11"
                     rx="3"
                   />
+
                   <path d="M6 11a6 6 0 0 0 12 0M12 17v4" />
                 </>
               )}
@@ -396,9 +503,10 @@ export default function VoiceModal({
           </button>
 
           <div className="voice-status">
-            {phase === "recording" ? (
+            {phase ===
+              "recording" && (
               <span className="rec-dot" />
-            ) : null}
+            )}
 
             {phase === "idle" &&
               "Tap to start recording"}
@@ -418,15 +526,19 @@ export default function VoiceModal({
 
             <input
               type="file"
-              accept="audio/*"
+              accept="audio/*,.mp3,.wav,.m4a,.webm,.ogg,.aac,.flac,.mp4"
               hidden
-              onChange={(e) => {
+              onChange={(event) => {
                 const file =
-                  e.target.files?.[0];
+                  event.target.files?.[0];
 
                 if (file) {
                   handleUpload(file);
                 }
+
+                // Allows the same file
+                // to be selected again.
+                event.target.value = "";
               }}
             />
           </label>
@@ -448,8 +560,10 @@ export default function VoiceModal({
           }}
           placeholder="Transcript appears here — you can edit it before analyzing, or just type the content."
           value={transcript}
-          onChange={(e) =>
-            setTranscript(e.target.value)
+          onChange={(event) =>
+            setTranscript(
+              event.target.value
+            )
           }
         />
 
