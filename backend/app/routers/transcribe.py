@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, HTTPException
-from google.genai import types
+
 from app.models import TranscriptionResponse
 from app.ai_client import require_client, MODEL
 
@@ -15,16 +15,34 @@ async def transcribe_audio(file: UploadFile) -> TranscriptionResponse:
 
     try:
         audio_bytes = await file.read()
-        mime_type = file.content_type or "audio/mpeg"
-        audio_part = types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
 
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=[
-                audio_part,
-                "Transcribe this audio exactly as spoken. Return only the transcript text, nothing else.",
-            ],
+        if not audio_bytes:
+            raise HTTPException(
+                status_code=400,
+                detail="Audio file is empty.",
+            )
+
+        # OpenAI-compatible audio transcription
+        response = client.audio.transcriptions.create(
+            model="openai/whisper-1",
+            file=(
+                file.filename or "audio.webm",
+                audio_bytes,
+                file.content_type or "audio/webm",
+            ),
         )
-        return TranscriptionResponse(text=response.text.strip())
+
+        text = (response.text or "").strip()
+
+        return TranscriptionResponse(text=text)
+
+    except HTTPException:
+        raise
+
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Transcription failed: {exc}")
+        print(f"Transcription failed: {exc}")
+
+        raise HTTPException(
+            status_code=502,
+            detail=f"Transcription failed: {exc}",
+        )
